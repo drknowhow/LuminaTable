@@ -2,7 +2,9 @@ Package: LuminaTable
 Title: Beautiful Interactive Tables for R and Shiny
 Version: 2.0.0
 Authors@R: person("Dimitri", "Tselenchuk", email = "dtselenc@gmail.com", role = c("aut", "cre"))
-Description: Create beautiful, interactive tables with custom themes, search, sorting, and pagination. Features a lightweight custom rendering engine (LuminaEngine) with Excel-inspired styling and support for sparklines, row selection, and column filters.
+Description: Create beautiful, interactive tables for R and Shiny with search, filters, sorting, pagination/scrolling, downloads, sparklines, conditional formatting, and heatmaps. Powered by LuminaEngine—a lightweight custom renderer with Excel-inspired styling, row selection, column visibility toggles, and performance tuning options including virtualization and debounced inputs.
+URL: https://drknowhow.github.io/LuminaTable, https://github.com/drknowhow/LuminaTable
+BugReports: https://github.com/drknowhow/LuminaTable/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
