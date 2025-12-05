@@ -1,0 +1,20 @@
+url: https://drknowhow.github.io/LuminaTable
+
+home:
+  title: "LuminaTable"
+  description: "Beautiful, interactive tables for R and Shiny."
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left: [home, reference]
+    right: [github]
+  components:
+    github:
+      icon: fa-github
+      href: https://github.com/drknowhow/LuminaTable
+    reference:
+      text: Reference
+      href: reference/index.html
