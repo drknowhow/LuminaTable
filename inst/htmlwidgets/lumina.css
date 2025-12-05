@@ -1,0 +1,1029 @@
+/* =========================================
+   0. LUMINA ENGINE CORE STYLES
+   ========================================= */
+.lumina-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    font-family: 'Segoe UI', 'Calibri', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fff;
+    border: 1px solid #d0d7de;
+}
+
+/* Title and Caption Styles */
+.lumina-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    text-align: left;
+    line-height: 1.4;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.lumina-caption {
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+    margin-top: 12px;
+    padding: 8px 12px;
+    text-align: left;
+    line-height: 1.4;
+    border-top: 1px solid #e0e0e0;
+}
+
+.lumina-container {
+    overflow-x: auto;
+    width: 100%;
+    background-color: #fff;
+}
+
+.lumina-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11pt;
+    background-color: #fff;
+    border: none;
+}
+
+.lumina-table th,
+.lumina-table td {
+    padding: 6px 10px;
+    text-align: left;
+    border: 1px solid #d0d7de;
+    border-top: none;
+    border-left: none;
+}
+
+/* Eye Icon for Column Hide */
+.lumina-eye-icon {
+    cursor: pointer;
+    opacity: 0.4;
+    font-size: 14px;
+    margin-right: 6px;
+    transition: opacity 0.2s;
+    user-select: none;
+}
+
+.lumina-eye-icon:hover {
+    opacity: 1;
+}
+
+.lumina-table th:first-child,
+.lumina-table td:first-child {
+    border-left: 1px solid #d0d7de;
+}
+
+.lumina-table th {
+    background-color: #f6f8fa;
+    font-weight: 600;
+    color: #24292f;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    border-top: 1px solid #d0d7de;
+    border-bottom: 1px solid #d0d7de;
+}
+
+.lumina-table th:hover {
+    background-color: #eef2f5;
+}
+
+.lumina-th-content {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* Header alignment support - use !important to override default */
+.lumina-table th[style*="text-align: center"] .lumina-th-content {
+    justify-content: center !important;
+}
+
+.lumina-table th[style*="text-align: right"] .lumina-th-content {
+    justify-content: flex-end !important;
+}
+
+.lumina-table th[style*="text-align: left"] .lumina-th-content {
+    justify-content: flex-start !important;
+}
+
+.lumina-sort-icon {
+    font-size: 10px;
+    color: #57606a;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.lumina-sort-icon-active {
+    opacity: 1;
+    font-weight: bold;
+}
+
+.lumina-sort-icon-inactive {
+    opacity: 0.4;
+    font-size: 11px;
+}
+
+.lumina-table tbody tr:nth-child(even) {
+    background-color: #f6f8fa;
+}
+
+.lumina-table tbody tr.lumina-selected td {
+    background-color: #cce5ff !important;
+    color: #004085 !important;
+}
+
+.lumina-checkbox {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    accent-color: #0969da;
+}
+
+.lumina-table tbody tr:hover {
+    background-color: #e3f2fd;
+}
+
+.lumina-table tbody tr:hover td {
+    background-color: #e3f2fd;
+}
+
+.lumina-notfound {
+    text-align: center;
+    padding: 40px 20px !important;
+    color: #57606a;
+    font-style: italic;
+}
+
+/* Search Bar */
+.lumina-head {
+    display: flex;
+    padding: 12px 16px;
+    background-color: #f6f8fa;
+    border-bottom: 1px solid #d0d7de;
+}
+
+.lumina-search-right .lumina-head {
+    justify-content: flex-end;
+}
+
+.lumina-search-left .lumina-head {
+    justify-content: flex-start;
+}
+
+.lumina-search-top .lumina-wrapper {
+    flex-direction: column;
+}
+
+.lumina-search-bottom .lumina-wrapper {
+    flex-direction: column-reverse;
+}
+
+.lumina-search-input {
+    padding: 6px 10px;
+    border: 1px solid #d0d7de;
+    border-radius: 3px;
+    font-size: 11pt;
+    min-width: 250px;
+    outline: none;
+    transition: all 0.15s;
+    font-family: 'Segoe UI', 'Calibri', sans-serif;
+}
+
+.lumina-search-input:focus {
+    border-color: #0969da;
+    box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.15);
+}
+
+.lumina-controls {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+/* Column Filters */
+.lumina-filter-input {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #d0d7de;
+    border-radius: 3px;
+    font-size: 10pt;
+    font-family: 'Segoe UI', 'Calibri', sans-serif;
+}
+
+/* Highlighting */
+mark.lumina-highlight {
+    background-color: #fff59c;
+    color: inherit;
+    font-weight: 600;
+    padding: 1px 0;
+}
+
+/* Footer & Pagination */
+.lumina-footer {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 12px 16px;
+    background-color: #f6f8fa;
+    border-top: 1px solid #d0d7de;
+    font-size: 10pt;
+}
+
+.lumina-summary {
+    color: #57606a;
+    margin-left: auto;
+}
+
+.lumina-pages {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.lumina-pagination-button {
+    padding: 5px 11px;
+    border: 1px solid #d0d7de;
+    background-color: #fff;
+    color: #24292f;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 10pt;
+    transition: all 0.15s;
+    min-width: 32px;
+    font-family: 'Segoe UI', 'Calibri', sans-serif;
+}
+
+.lumina-pagination-button:hover:not(:disabled):not(.lumina-pagination-button-current) {
+    background-color: #f6f8fa;
+    border-color: #8c959f;
+}
+
+.lumina-pagination-button-current {
+    background-color: #0969da;
+    color: #fff;
+    border-color: #0969da;
+    font-weight: 600;
+}
+
+.lumina-pagination-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.lumina-pagination-dots {
+    padding: 0 4px;
+    color: #9ca3af;
+}
+
+.lumina-pagination-limiter {
+    display: flex;
+    align-items: center;
+}
+
+.lumina-pagination-limit {
+    padding: 4px 8px;
+    border: 1px solid #d0d7de;
+    border-radius: 3px;
+    font-size: 10pt;
+    font-family: 'Segoe UI', 'Calibri', sans-serif;
+    background-color: #fff;
+    color: #24292f;
+}
+
+/* =========================================
+   HEADER & CONTROLS REFACTOR
+   ========================================= */
+
+/* Main header container */
+.lumina-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 12px;
+    background-color: #f6f8fa;
+    border-bottom: 1px solid #d0d7de;
+}
+
+/* Take up remaining space */
+.lumina-search-container {
+    position: relative;
+    display: flex;
+    flex-grow: 1;
+    max-width: 400px;
+}
+
+/* Adjust input to make space for clear button */
+.lumina-search-input {
+    width: 100%;
+    padding-right: 30px !important;
+}
+
+/* General clear button for search and filters */
+.lumina-search-clear,
+.lumina-filter-clear {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 8px;
+    color: #57606a;
+    opacity: 0.7;
+    line-height: 1;
+}
+.lumina-search-clear:hover,
+.lumina-filter-clear:hover {
+    opacity: 1;
+}
+
+/* Container for right-aligned buttons */
+.lumina-controls-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0; /* Prevent buttons from wrapping */
+}
+
+/* A general button style */
+.lumina-button,
+.lumina-clear-filters-button,
+.lumina-reset-selection-button {
+    padding: 5px 11px;
+    border: 1px solid #d0d7de;
+    background-color: #f6f8fa;
+    color: #24292f;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 10pt;
+    transition: all 0.15s;
+    font-family: 'Segoe UI', 'Calibri', sans-serif;
+    white-space: nowrap;
+}
+.lumina-button:hover,
+.lumina-clear-filters-button:hover,
+.lumina-reset-selection-button:hover {
+    background-color: #f0f2f4;
+    border-color: #8c959f;
+}
+
+
+/* =========================================
+   COLUMN FILTERS REFACTOR
+   ========================================= */
+
+.lumina-filter-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.lumina-filter-input {
+    width: 100%;
+    padding-right: 25px !important; /* Space for clear button */
+}
+
+/* Hide legacy controls wrapper */
+.lumina-controls {
+    display: none !important;
+}
+
+/* Column Toggle Wrapper in Header */
+.lumina-column-toggle-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.lumina-column-toggle-button {
+    padding: 5px 11px;
+    background-color: #f6f8fa;
+    border: 1px solid #d0d7de;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 10pt;
+    font-family: 'Segoe UI', 'Calibri', sans-serif;
+    transition: all 0.15s;
+    color: #24292f;
+    white-space: nowrap;
+}
+
+.lumina-column-toggle-button:hover {
+    background-color: #f0f2f4;
+    border-color: #8c959f;
+}
+
+.lumina-column-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    min-width: 200px;
+    max-width: 300px;
+    z-index: 1000;
+}
+
+.lumina-column-option {
+    display: block;
+    padding: 6px 12px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 10pt;
+    transition: background-color 0.1s;
+}
+
+.lumina-column-option:hover {
+    background-color: #f6f8fa;
+}
+
+.lumina-column-option input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.lumina-column-reset {
+    padding: 8px 12px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 10pt;
+    font-weight: 600;
+    color: #0969da;
+    transition: background-color 0.1s;
+    border-bottom: 1px solid #d0d7de;
+}
+
+.lumina-column-reset:hover {
+    background-color: #f6f8fa;
+}
+
+.lumina-column-separator {
+    height: 1px;
+    background-color: #d0d7de;
+    margin: 4px 0;
+}
+
+/* Download Dropdown */
+.lumina-download-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.lumina-download-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 12px;
+    min-width: 250px;
+    z-index: 1000;
+}
+
+.lumina-download-filename,
+.lumina-download-format {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #d0d7de;
+    border-radius: 3px;
+    font-size: 10pt;
+    font-family: 'Segoe UI', 'Calibri', sans-serif;
+    margin-top: 4px;
+}
+
+.lumina-download-filename:focus,
+.lumina-download-format:focus {
+    outline: none;
+    border-color: #0969da;
+    box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.1);
+}
+
+.lumina-download-action {
+    background-color: #0969da !important;
+    color: #fff !important;
+    border-color: #0969da !important;
+}
+
+.lumina-download-action:hover {
+    background-color: #0860ca !important;
+    border-color: #0860ca !important;
+}
+
+/* Button Bar (deprecated - now in header) */
+.lumina-button-bar {
+    display: none;
+}
+
+/* =========================================
+   BASE STYLES
+   ========================================= */
+
+/* =========================================
+   SEARCH BAR POSITIONING & VISIBILITY
+   ========================================= */
+
+/* HIDE SEARCH BAR: Completely hide the search wrapper */
+.lumina-search-hidden .lumina-head {
+    display: none !important;
+}
+
+/* NO HIGHLIGHT: Make the <mark> tag invisible */
+.lumina-no-highlight mark.lumina-highlight {
+    background-color: transparent !important;
+    color: inherit !important;
+    font-weight: normal !important;
+padding: 0 !important;
+}
+
+/* =========================================
+   THEMES
+   ========================================= */
+
+/* MIDNIGHT THEME */
+.lumina-midnight .lumina-wrapper { background-color: #1e1e2f !important; border-color: #333 !important; }
+.lumina-midnight .lumina-container { background-color: #1e1e2f !important; }
+.lumina-midnight .lumina-table { background-color: #1e1e2f !important; color: #c7c7d4 !important; }
+.lumina-midnight .lumina-table th { background-color: #2b2b40 !important; color: #fff !important; border: 1px solid #444 !important; }
+.lumina-midnight .lumina-table th:hover { background-color: #363650 !important; }
+.lumina-midnight .lumina-table td { background-color: #1e1e2f !important; border: 1px solid #333 !important; color: #c7c7d4 !important; }
+.lumina-midnight .lumina-table tbody tr:nth-child(even) td { background-color: #252538 !important; }
+.lumina-midnight .lumina-table tbody tr:hover td { background-color: #2b2b52 !important; }
+.lumina-midnight .lumina-head { background-color: #1e1e2f !important; border-bottom-color: #333 !important; }
+.lumina-midnight .lumina-search-input { background-color: #2b2b40 !important; border: 1px solid #444 !important; color: white !important; }
+.lumina-midnight .lumina-search-input:focus { border-color: #6200ea !important; box-shadow: 0 0 0 2px rgba(98, 0, 234, 0.3) !important; }
+.lumina-midnight .lumina-footer { background-color: #1e1e2f !important; color: #c7c7d4 !important; border-top-color: #333 !important; }
+.lumina-midnight .lumina-pagination-button { background-color: #2b2b40 !important; color: #c7c7d4 !important; border-color: #444 !important; }
+.lumina-midnight .lumina-pagination-button:hover:not(:disabled):not(.lumina-pagination-button-current) { background-color: #363650 !important; }
+.lumina-midnight .lumina-pagination-button-current { background-color: #6200ea !important; border-color: #6200ea !important; }
+.lumina-midnight .lumina-notfound { color: #9ca3af !important; }
+.lumina-midnight .lumina-pagination-limit { background-color: #2b2b40 !important; color: #c7c7d4 !important; border-color: #444 !important; }
+.lumina-midnight .lumina-button { background-color: #2b2b40 !important; color: #c7c7d4 !important; border-color: #444 !important; }
+.lumina-midnight .lumina-button:hover { background-color: #363650 !important; }
+.lumina-midnight .lumina-filter-input { background-color: #2b2b40 !important; color: #c7c7d4 !important; border-color: #444 !important; }
+.lumina-midnight .lumina-filter-input:focus { border-color: #6200ea !important; box-shadow: 0 0 0 2px rgba(98, 0, 234, 0.3) !important; }
+.lumina-midnight .lumina-column-dropdown { background-color: #2b2b40 !important; border-color: #444 !important; }
+.lumina-midnight .lumina-column-option { color: #c7c7d4 !important; }
+.lumina-midnight .lumina-column-option:hover { background-color: #363650 !important; }
+.lumina-midnight .lumina-title { color: #fff !important; border-bottom-color: #444 !important; }
+.lumina-midnight .lumina-caption { color: #9ca3af !important; border-top-color: #444 !important; }
+.lumina-midnight .lumina-download-dropdown { background-color: #2b2b40 !important; border-color: #444 !important; }
+.lumina-midnight .lumina-download-filename,
+.lumina-midnight .lumina-download-format { background-color: #1e1e2f !important; color: #c7c7d4 !important; border-color: #444 !important; }
+.lumina-midnight .lumina-download-filename:focus,
+.lumina-midnight .lumina-download-format:focus { border-color: #6200ea !important; box-shadow: 0 0 0 2px rgba(98, 0, 234, 0.3) !important; }
+.lumina-midnight .lumina-table tbody tr.lumina-selected td { background-color: #4a148c !important; color: #e1bee7 !important; }
+.lumina-midnight .lumina-checkbox { accent-color: #ab47bc !important; }
+
+/* CORPORATE THEME */
+.lumina-corporate .lumina-wrapper { border-color: #1a5c38 !important; }
+.lumina-corporate .lumina-container { border: 1px solid #1a5c38 !important; }
+.lumina-corporate .lumina-table th { background-color: #217346 !important; color: white !important; border: 1px solid #1a5c38 !important; }
+.lumina-corporate .lumina-table th:hover { background-color: #1a5c38 !important; }
+.lumina-corporate .lumina-table td { background-color: #ffffff !important; border: 1px solid #d1d5db !important; color: #1f2937 !important; }
+.lumina-corporate .lumina-table tbody tr:nth-child(even) td { background-color: #f0f9f4 !important; }
+.lumina-corporate .lumina-table tbody tr:hover td { background-color: #dcfce7 !important; }
+.lumina-corporate .lumina-search-input { border-color: #1a5c38 !important; }
+.lumina-corporate .lumina-search-input:focus { border-color: #217346 !important; box-shadow: 0 0 0 2px rgba(33, 115, 70, 0.2) !important; }
+.lumina-corporate .lumina-pagination-button-current { background-color: #217346 !important; border-color: #217346 !important; }
+.lumina-corporate .lumina-pagination-limit { border-color: #1a5c38 !important; }
+.lumina-corporate .lumina-button { background-color: #f0f9f4 !important; border-color: #1a5c38 !important; color: #1a5c38 !important; }
+.lumina-corporate .lumina-button:hover { background-color: #dcfce7 !important; border-color: #217346 !important; }
+.lumina-corporate .lumina-filter-input { border-color: #1a5c38 !important; background-color: #f0f9f4 !important; }
+.lumina-corporate .lumina-filter-input:focus { border-color: #217346 !important; box-shadow: 0 0 0 2px rgba(33, 115, 70, 0.2) !important; }
+.lumina-corporate .lumina-column-dropdown { border-color: #1a5c38 !important; }
+.lumina-corporate .lumina-column-option:hover { background-color: #e8f5e9 !important; }
+.lumina-corporate .lumina-title { color: #1a5c38 !important; border-bottom-color: #1a5c38 !important; font-weight: 700; }
+.lumina-corporate .lumina-caption { color: #555 !important; border-top-color: #1a5c38 !important; }
+.lumina-corporate .lumina-download-dropdown { border-color: #1a5c38 !important; }
+.lumina-corporate .lumina-download-filename,
+.lumina-corporate .lumina-download-format { background-color: #f0f9f4 !important; border-color: #1a5c38 !important; }
+.lumina-corporate .lumina-download-filename:focus,
+.lumina-corporate .lumina-download-format:focus { border-color: #217346 !important; box-shadow: 0 0 0 2px rgba(33, 115, 70, 0.2) !important; }
+.lumina-corporate .lumina-download-action { background-color: #217346 !important; border-color: #217346 !important; }
+.lumina-corporate .lumina-download-action:hover { background-color: #1a5c38 !important; border-color: #1a5c38 !important; }
+.lumina-corporate .lumina-table tbody tr.lumina-selected td { background-color: #c8e6c9 !important; color: #1b5e20 !important; font-weight: 500; }
+.lumina-corporate .lumina-checkbox { accent-color: #217346 !important; }
+
+/* CYBER THEME */
+.lumina-cyber .lumina-wrapper { background-color: #000 !important; font-family: 'Courier New', Courier, monospace !important; border-color: #00ff41 !important; }
+.lumina-cyber .lumina-container { background-color: #000 !important; border: 1px solid #00ff41 !important; box-shadow: 0 0 10px #00ff41 !important; }
+.lumina-cyber .lumina-table { background-color: #000 !important; }
+.lumina-cyber .lumina-table th { background-color: #0d0d0d !important; color: #00ff41 !important; border: 1px solid #00ff41 !important; text-transform: uppercase; text-shadow: 0 0 5px #00ff41; }
+.lumina-cyber .lumina-table th:hover { background-color: #1a1a1a !important; }
+.lumina-cyber .lumina-table td { background-color: #000 !important; color: #00ff41 !important; border: 1px solid #003300 !important; }
+.lumina-cyber .lumina-table tbody tr:nth-child(even) td { background-color: #0a0a0a !important; }
+.lumina-cyber .lumina-table tbody tr:hover td { background-color: #001a00 !important; }
+.lumina-cyber .lumina-head { background-color: #000 !important; border-bottom-color: #00ff41 !important; }
+.lumina-cyber .lumina-search-input { background-color: #000 !important; color: #00ff41 !important; border: 1px solid #00ff41 !important; font-family: 'Courier New', Courier, monospace !important; }
+.lumina-cyber .lumina-search-input:focus { box-shadow: 0 0 5px #00ff41 !important; border-color: #00ff41 !important; }
+.lumina-cyber .lumina-footer { background-color: #000 !important; color: #00ff41 !important; border-top-color: #00ff41 !important; }
+.lumina-cyber .lumina-pagination-button { background-color: #000 !important; color: #00ff41 !important; border-color: #00ff41 !important; }
+.lumina-cyber .lumina-pagination-button:hover:not(:disabled):not(.lumina-pagination-button-current) { background-color: #003300 !important; box-shadow: 0 0 5px #00ff41 !important; }
+.lumina-cyber .lumina-pagination-button-current { background-color: #003300 !important; box-shadow: 0 0 10px #00ff41 !important; border-color: #00ff41 !important; }
+.lumina-cyber .lumina-pagination-limit { background-color: #000 !important; color: #00ff41 !important; border-color: #00ff41 !important; font-family: 'Courier New', Courier, monospace !important; }
+.lumina-cyber .lumina-button { background-color: #000 !important; color: #00ff41 !important; border-color: #00ff41 !important; font-family: 'Courier New', Courier, monospace !important; text-transform: uppercase; }
+.lumina-cyber .lumina-button:hover { background-color: #003300 !important; box-shadow: 0 0 5px #00ff41 !important; }
+.lumina-cyber .lumina-filter-input { background-color: #000 !important; color: #00ff41 !important; border-color: #00ff41 !important; font-family: 'Courier New', Courier, monospace !important; }
+.lumina-cyber .lumina-filter-input:focus { box-shadow: 0 0 5px #00ff41 !important; border-color: #00ff41 !important; }
+.lumina-cyber .lumina-column-dropdown { background-color: #000 !important; border-color: #00ff41 !important; box-shadow: 0 0 10px #00ff41 !important; }
+.lumina-cyber .lumina-column-option { color: #00ff41 !important; }
+.lumina-cyber .lumina-column-option:hover { background-color: #003300 !important; }
+.lumina-cyber .lumina-title { color: #00ff41 !important; border-bottom-color: #00ff41 !important; text-shadow: 0 0 5px rgba(0, 255, 65, 0.5); font-family: 'Courier New', monospace; }
+.lumina-cyber .lumina-caption { color: #00ff41 !important; border-top-color: #00ff41 !important; opacity: 0.7; font-family: 'Courier New', monospace; }
+.lumina-cyber .lumina-download-dropdown { background-color: #000 !important; border-color: #00ff41 !important; box-shadow: 0 0 10px #00ff41 !important; }
+.lumina-cyber .lumina-download-dropdown label { color: #00ff41 !important; font-family: 'Courier New', monospace; }
+.lumina-cyber .lumina-download-filename,
+.lumina-cyber .lumina-download-format { background-color: #000 !important; color: #00ff41 !important; border-color: #00ff41 !important; font-family: 'Courier New', monospace; }
+.lumina-cyber .lumina-download-filename:focus,
+.lumina-cyber .lumina-download-format:focus { box-shadow: 0 0 5px #00ff41 !important; }
+.lumina-cyber .lumina-download-action { background-color: #003300 !important; border-color: #00ff41 !important; color: #00ff41 !important; text-transform: uppercase; }
+.lumina-cyber .lumina-download-action:hover { box-shadow: 0 0 10px #00ff41 !important; }
+.lumina-cyber .lumina-table tbody tr.lumina-selected td { background-color: #003300 !important; color: #00ff41 !important; box-shadow: inset 0 0 10px rgba(0, 255, 65, 0.3) !important; font-weight: bold; }
+.lumina-cyber .lumina-checkbox { accent-color: #00ff41 !important; }
+
+/* SIMPLE THEME */
+.lumina-simple .lumina-wrapper { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important; border: none !important; }
+.lumina-simple .lumina-container { border: none !important; }
+.lumina-simple .lumina-table { border: none !important; }
+.lumina-simple .lumina-table th { background-color: transparent !important; color: #333 !important; border: none !important; border-bottom: 2px solid #333 !important; text-transform: uppercase; font-size: 10px !important; font-weight: 700; letter-spacing: 0.5px; }
+.lumina-simple .lumina-table td { background-color: #fff !important; color: #555 !important; border: none !important; border-bottom: 1px solid #eee !important; }
+.lumina-simple .lumina-table tbody tr:nth-child(even) td { background-color: #fff !important; }
+.lumina-simple .lumina-table tbody tr:hover td { background-color: #f9f9f9 !important; }
+.lumina-simple .lumina-head { border-bottom: none !important; background-color: transparent !important; }
+.lumina-simple .lumina-footer { border-top: 2px solid #333 !important; background-color: transparent !important; }
+.lumina-simple .lumina-pagination-limit { border-color: #333 !important; }
+.lumina-simple .lumina-button { background-color: #fff !important; border-color: #333 !important; color: #333 !important; }
+.lumina-simple .lumina-button:hover { background-color: #f9f9f9 !important; }
+.lumina-simple .lumina-filter-input { border-color: #333 !important; background-color: #fff !important; }
+.lumina-simple .lumina-filter-input:focus { border-color: #000 !important; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1) !important; }
+.lumina-simple .lumina-column-dropdown { border-color: #333 !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important; }
+.lumina-simple .lumina-column-option:hover { background-color: #f9f9f9 !important; }
+.lumina-simple .lumina-title { color: #000 !important; border-bottom-color: #333 !important; font-weight: 500; }
+.lumina-simple .lumina-caption { color: #666 !important; border-top-color: #333 !important; }
+.lumina-simple .lumina-download-dropdown { border-color: #333 !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important; }
+.lumina-simple .lumina-download-filename,
+.lumina-simple .lumina-download-format { border-color: #333 !important; }
+.lumina-simple .lumina-download-filename:focus,
+.lumina-simple .lumina-download-format:focus { border-color: #000 !important; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1) !important; }
+.lumina-simple .lumina-table tbody tr.lumina-selected td { background-color: #e0e0e0 !important; color: #000 !important; font-weight: 500; }
+.lumina-simple .lumina-checkbox { accent-color: #333 !important; }
+
+/* SUNSET THEME */
+.lumina-sunset .lumina-wrapper { background: linear-gradient(135deg, #fff0f5 0%, #ffffff 100%) !important; border: none !important; }
+.lumina-sunset .lumina-container { border: none !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; border-radius: 8px; overflow: hidden; }
+.lumina-sunset .lumina-table th { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%) !important; color: #fff !important; border: none !important; border-bottom: 1px solid rgba(255,255,255,0.3) !important; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+.lumina-sunset .lumina-table th:hover { opacity: 0.9; }
+.lumina-sunset .lumina-table td { background-color: #fff !important; color: #666 !important; border: none !important; border-bottom: 1px solid #fff0f5 !important; }
+.lumina-sunset .lumina-table tbody tr:nth-child(even) td { background-color: #fff5f8 !important; }
+.lumina-sunset .lumina-table tbody tr:hover td { background-color: #ffe4ec !important; }
+.lumina-sunset .lumina-head { background: linear-gradient(135deg, #fff0f5 0%, #ffffff 100%) !important; border-bottom: none !important; }
+.lumina-sunset .lumina-footer { background: linear-gradient(135deg, #fff0f5 0%, #ffffff 100%) !important; border-top: none !important; }
+.lumina-sunset .lumina-pagination-button-current { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%) !important; border-color: #ff9a9e !important; }
+.lumina-sunset .lumina-pagination-limit { border: 1px solid #ff9a9e !important; }
+.lumina-sunset .lumina-button { background-color: #fff !important; border-color: #ff9a9e !important; color: #666 !important; }
+.lumina-sunset .lumina-button:hover { background-color: #fff5f8 !important; border-color: #ff7a80 !important; }
+.lumina-sunset .lumina-filter-input { border-color: #ff9a9e !important; background-color: #fff !important; }
+.lumina-sunset .lumina-filter-input:focus { border-color: #ff7a80 !important; box-shadow: 0 0 0 2px rgba(255, 154, 158, 0.2) !important; }
+.lumina-sunset .lumina-column-dropdown { border-color: #ff9a9e !important; box-shadow: 0 10px 30px rgba(255, 154, 158, 0.2) !important; }
+.lumina-sunset .lumina-column-option:hover { background-color: #fff5f8 !important; }
+.lumina-sunset .lumina-title { color: #e74c3c !important; border-bottom-color: #ff9a9e !important; font-weight: 600; }
+.lumina-sunset .lumina-caption { color: #c0392b !important; border-top-color: #ff9a9e !important; }
+.lumina-sunset .lumina-download-dropdown { border-color: #ff9a9e !important; box-shadow: 0 10px 30px rgba(255, 154, 158, 0.2) !important; }
+.lumina-sunset .lumina-download-filename,
+.lumina-sunset .lumina-download-format { border-color: #ff9a9e !important; }
+.lumina-sunset .lumina-download-filename:focus,
+.lumina-sunset .lumina-download-format:focus { border-color: #ff7a80 !important; box-shadow: 0 0 0 2px rgba(255, 154, 158, 0.2) !important; }
+.lumina-sunset .lumina-download-action { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%) !important; border-color: #ff9a9e !important; }
+.lumina-sunset .lumina-download-action:hover { opacity: 0.9; }
+.lumina-sunset .lumina-table tbody tr.lumina-selected td { background: linear-gradient(135deg, #ffd1dc 0%, #ffe4ec 100%) !important; color: #c2185b !important; font-weight: 500; border-bottom: 1px solid #ff9a9e !important; }
+.lumina-sunset .lumina-checkbox { accent-color: #ff9a9e !important; }
+
+/* AUTO THEME */
+.lumina-auto .lumina-container { border: none !important; }
+.lumina-auto .lumina-table th { background-color: #f3f4f6 !important; color: #111 !important; }
+.lumina-auto .lumina-table td { background-color: #fff !important; color: #1f2937 !important; }
+.lumina-auto .lumina-table tbody tr.lumina-selected td { background-color: #cce5ff !important; color: #004085 !important; }
+.lumina-auto .lumina-checkbox { accent-color: #0969da !important; }
+@media (prefers-color-scheme: dark) {
+    .lumina-auto .lumina-wrapper { background-color: #1e1e2f !important; border-color: #333 !important; }
+    .lumina-auto .lumina-container { background-color: #1e1e2f !important; }
+    .lumina-auto .lumina-table { background-color: #1e1e2f !important; color: #c7c7d4 !important; }
+    .lumina-auto .lumina-table th { background-color: #2b2b40 !important; color: #fff !important; border: 1px solid #444 !important; }
+    .lumina-auto .lumina-table th:hover { background-color: #363650 !important; }
+    .lumina-auto .lumina-table td { background-color: #1e1e2f !important; border: 1px solid #333 !important; color: #ddd !important; }
+    .lumina-auto .lumina-table tbody tr:nth-child(even) td { background-color: #252538 !important; }
+    .lumina-auto .lumina-table tbody tr:hover td { background-color: #2b2b52 !important; }
+    .lumina-auto .lumina-head { background-color: #1e1e2f !important; border-bottom-color: #333 !important; }
+    .lumina-auto .lumina-search-input { background-color: #2b2b40 !important; border: 1px solid #444 !important; color: white !important; }
+    .lumina-auto .lumina-footer { background-color: #1e1e2f !important; color: #c7c7d4 !important; border-top-color: #333 !important; }
+    .lumina-auto .lumina-pagination-button { background-color: #2b2b40 !important; color: #c7c7d4 !important; border-color: #444 !important; }
+    .lumina-auto .lumina-pagination-button-current { background-color: #6200ea !important; border-color: #6200ea !important; }
+    .lumina-auto .lumina-pagination-limit { background-color: #2b2b40 !important; color: #c7c7d4 !important; border-color: #444 !important; }
+    .lumina-auto .lumina-button { background-color: #2b2b40 !important; color: #c7c7d4 !important; border-color: #444 !important; }
+    .lumina-auto .lumina-button:hover { background-color: #363650 !important; }
+    .lumina-auto .lumina-filter-input { background-color: #2b2b40 !important; color: #c7c7d4 !important; border-color: #444 !important; }
+    .lumina-auto .lumina-filter-input:focus { border-color: #6200ea !important; box-shadow: 0 0 0 2px rgba(98, 0, 234, 0.3) !important; }
+  .lumina-auto .lumina-column-dropdown { background-color: #2b2b40 !important; border-color: #444 !important; }
+  .lumina-auto .lumina-column-option { color: #c7c7d4 !important; }
+  .lumina-auto .lumina-column-option:hover { background-color: #363650 !important; }
+  .lumina-auto .lumina-title { color: #fff !important; border-bottom-color: #444 !important; }
+  .lumina-auto .lumina-caption { color: #9ca3af !important; border-top-color: #444 !important; }
+  .lumina-auto .lumina-download-dropdown { background-color: #2b2b40 !important; border-color: #444 !important; }
+  .lumina-auto .lumina-download-filename,
+  .lumina-auto .lumina-download-format { background-color: #1e1e2f !important; color: #c7c7d4 !important; border-color: #444 !important; }
+  .lumina-auto .lumina-download-filename:focus,
+  .lumina-auto .lumina-download-format:focus { border-color: #6200ea !important; box-shadow: 0 0 0 2px rgba(98, 0, 234, 0.3) !important; }
+  .lumina-auto .lumina-table tbody tr.lumina-selected td { background-color: #4a148c !important; color: #e1bee7 !important; }
+  .lumina-auto .lumina-checkbox { accent-color: #ab47bc !important; }
+}/* =========================================
+   EXPAND/FULLSCREEN BUTTON
+   ========================================= */
+.lumina-expand-button {
+    background: none;
+    border: 1px solid #d0d7de;
+    color: #24292f;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    line-height: 1;
+    transition: all 0.2s;
+    margin-left: 8px;
+}
+
+.lumina-expand-button:hover {
+    background-color: #f6f8fa;
+    border-color: #b0b7c0;
+}
+
+.lumina-expand-button:active {
+    background-color: #eef2f5;
+}
+
+/* Fullscreen Mode */
+.lumina-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background-color: #fff !important;
+    overflow: auto !important;
+}
+
+.lumina-fullscreen .lumina-container {
+    flex: 1 !important;
+    overflow: auto !important;
+    height: auto !important;
+}
+
+.lumina-fullscreen .lumina-table {
+    height: 100% !important;
+}
+
+/* =========================================
+   LAYOUT OPTIONS (opt_layout)
+   ========================================= */
+
+/* Striped rows */
+.lumina-striped tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+.lumina-striped tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+/* Bordered cells */
+.lumina-bordered .lumina-table th,
+.lumina-bordered .lumina-table td {
+    border: 1px solid #d0d7de;
+}
+
+.lumina-bordered .lumina-table {
+    border: 1px solid #d0d7de;
+}
+
+/* Border styles */
+.lumina-border-solid .lumina-table,
+.lumina-border-solid .lumina-table th,
+.lumina-border-solid .lumina-table td {
+    border-style: solid !important;
+}
+
+.lumina-border-dashed .lumina-table,
+.lumina-border-dashed .lumina-table th,
+.lumina-border-dashed .lumina-table td {
+    border-style: dashed !important;
+}
+
+.lumina-border-dotted .lumina-table,
+.lumina-border-dotted .lumina-table th,
+.lumina-border-dotted .lumina-table td {
+    border-style: dotted !important;
+}
+
+.lumina-border-none .lumina-table,
+.lumina-border-none .lumina-table th,
+.lumina-border-none .lumina-table td {
+    border: none !important;
+}
+
+.lumina-border-light .lumina-table th,
+.lumina-border-light .lumina-table td {
+    border: 1px solid #e8e8e8;
+}
+
+.lumina-border-heavy .lumina-table th,
+.lumina-border-heavy .lumina-table td {
+    border: 2px solid #999;
+}
+
+/* Compact spacing */
+.lumina-compact .lumina-table th,
+.lumina-compact .lumina-table td {
+    padding: 4px 8px !important;
+}
+
+.lumina-compact .lumina-table {
+    font-size: 10pt !important;
+}
+
+/* Hover effect - subtle shadow focus */
+.lumina-hover tbody tr:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 -2px 8px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+}
+
+/* Shadow effects */
+.lumina-shadow-small {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.lumina-shadow-medium {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.lumina-shadow-large {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.lumina-shadow-none {
+    box-shadow: none !important;
+}
+
+/* Sticky header */
+.lumina-sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #f6f8fa;
+}
+
+/* Footer sticky */
+.lumina-wrapper.lumina-footer-sticky .lumina-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background-color: #ffffff;
+    border-top: 1px solid #d0d7de;
+}
+
+/* Text wrapping */
+.lumina-no-wrap .lumina-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Disable animations */
+.lumina-no-animation,
+.lumina-no-animation * {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* CSS Variables for layout customization */
+.lumina-table {
+    --lumina-vertical-align: middle;
+    --lumina-cell-padding: 10px 12px;
+    --lumina-row-height: auto;
+    --lumina-header-height: auto;
+    --lumina-animation-duration: 0.3s;
+}
+
+.lumina-table th {
+    padding: var(--lumina-cell-padding);
+    height: var(--lumina-header-height);
+    vertical-align: var(--lumina-vertical-align);
+}
+
+.lumina-table td {
+    padding: var(--lumina-cell-padding);
+    height: var(--lumina-row-height);
+    vertical-align: var(--lumina-vertical-align);
+}
+
+/* Animation transitions */
+.lumina-wrapper:not(.lumina-no-animation) {
+    transition: all var(--lumina-animation-duration) ease;
+}
+
+.lumina-wrapper:not(.lumina-no-animation) tbody tr {
+    transition: background-color var(--lumina-animation-duration) ease;
+}
+
+/* Conditional formatting controls */
+.lumina-condformat-icon {
+    margin-left: 6px;
+    cursor: pointer;
+    opacity: 0.75;
+    font-size: 12px;
+    position: relative;
+}
+
+.lumina-condformat-icon.lumina-condformat-dirty::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: -5px;
+    width: 6px;
+    height: 6px;
+    background: #e74c3c;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #fff;
+}
+
+.lumina-condformat-icon:hover {
+    opacity: 1;
+}
+
+.lumina-condformat-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 5;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 8px;
+    min-width: 240px;
+    max-width: 320px;
+    box-sizing: border-box;
+}
+
+.lumina-condformat-header {
+    font-size: 12px;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.lumina-condformat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.lumina-condformat-row input,
+.lumina-condformat-row select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 6px;
+    font-size: 11px;
+}
+
+.lumina-condformat-note {
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.lumina-condformat-reset {
+    margin-left: 8px;
+}
+
+/* Heatmap applied in-table: uses cell backgrounds only */

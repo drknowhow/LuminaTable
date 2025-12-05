@@ -1,0 +1,9 @@
+dependencies:
+  - name: lumina
+    version: 1.0.0
+    src: htmlwidgets
+    script:
+      - lumina.js
+      - lib/lumina/lumina_engine.js
+    stylesheet:
+      - lumina.css
