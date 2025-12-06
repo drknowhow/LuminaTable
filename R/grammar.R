@@ -230,13 +230,15 @@ opt_condformat <- function(w, ..., rules = NULL, edit = FALSE) {
 
 #' Apply a heatmap to table cells
 #'
-#' Colors specified numeric columns using a low→high gradient. The heatmap is applied directly to the table cells (no separate block).
+#' Colors specified numeric columns using a low→high gradient. The heatmap is applied directly to the table cells.
 #'
 #' @param w A lumina widget
 #' @param columns Character vector of column names to heatmap. Must be numeric in the data.
 #' @param palette Character vector of 2-5 hex colors used for a linear gradient (low → high).
+#' @param showValues Logical. Show numeric values in cells (TRUE) or hide content and show only color (FALSE). Default: TRUE.
+#' @param showScale Logical. Add a color scale bar in the table footer showing the gradient mapping. Default: FALSE.
 #' @export
-opt_heatmap <- function(w, columns, palette = c("#f7fbff", "#6baed6", "#08306b")) {
+opt_heatmap <- function(w, columns, palette = c("#f7fbff", "#6baed6", "#08306b"), showValues = TRUE, showScale = FALSE) {
   if (is.null(w$x$config)) w$x$config <- list()
 
   if (missing(columns) || length(columns) == 0) {
@@ -245,7 +247,9 @@ opt_heatmap <- function(w, columns, palette = c("#f7fbff", "#6baed6", "#08306b")
 
   w$x$config$heatmap <- list(
     columns = as.character(columns),
-    palette = as.character(palette)
+    palette = as.character(palette),
+    showValues = isTRUE(showValues),
+    showScale = isTRUE(showScale)
   )
 
   return(w)

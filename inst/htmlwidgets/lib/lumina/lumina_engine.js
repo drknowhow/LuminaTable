@@ -294,7 +294,14 @@ class LuminaGrid {
     const num = Number(value);
     if (!Number.isFinite(num)) return;
     const { min, max } = entry;
-    cellEl.style.background = this.interpolateColor(this.heatmapPalette, min, max, num);
+    const bgColor = this.interpolateColor(this.heatmapPalette, min, max, num);
+    cellEl.style.background = bgColor;
+    
+    // Hide content if showValues is false
+    if (this.heatmap && this.heatmap.showValues === false) {
+      cellEl.style.color = bgColor;  // Make text same color as background (invisible)
+      cellEl.style.fontSize = '0';   // Also hide by making font size 0
+    }
   }
 
   interpolateColor(palette, min, max, value) {
@@ -318,6 +325,54 @@ class LuminaGrid {
     const g = mix(g1, g2);
     const b = mix(b1, b2);
     return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  createHeatmapScale() {
+    if (!this.heatmap || !this.heatmap.showScale || !this.heatmapColumns || Object.keys(this.heatmapColumns).length === 0) {
+      return null;
+    }
+
+    const scaleContainer = document.createElement("div");
+    scaleContainer.className = "lumina-heatmap-scale";
+    
+    // Create scale bar for each heatmap column
+    Object.keys(this.heatmapColumns).forEach(colName => {
+      const entry = this.heatmapColumns[colName];
+      const { min, max } = entry;
+      
+      const scaleItem = document.createElement("div");
+      scaleItem.className = "lumina-heatmap-scale-item";
+      
+      // Column label
+      const label = document.createElement("span");
+      label.className = "lumina-heatmap-scale-label";
+      label.innerText = colName;
+      scaleItem.appendChild(label);
+      
+      // Color gradient bar
+      const bar = document.createElement("div");
+      bar.className = "lumina-heatmap-scale-bar";
+      
+      // Create gradient background
+      const colors = this.heatmapPalette.join(", ");
+      const stops = this.heatmapPalette.map((color, idx) => {
+        const pct = (idx / (this.heatmapPalette.length - 1)) * 100;
+        return `${color} ${pct}%`;
+      }).join(", ");
+      bar.style.background = `linear-gradient(to right, ${stops})`;
+      
+      scaleItem.appendChild(bar);
+      
+      // Min/Max labels
+      const minMax = document.createElement("div");
+      minMax.className = "lumina-heatmap-scale-minmax";
+      minMax.innerHTML = `<span class="lumina-heatmap-scale-min">${min.toFixed(2)}</span><span class="lumina-heatmap-scale-max">${max.toFixed(2)}</span>`;
+      scaleItem.appendChild(minMax);
+      
+      scaleContainer.appendChild(scaleItem);
+    });
+    
+    return scaleContainer;
   }
 
   sort(colName) {
@@ -1502,6 +1557,12 @@ class LuminaGrid {
             summary.setAttribute("role", "status");
             summary.setAttribute("aria-live", "polite");
             footer.appendChild(summary);
+        }
+        
+        // Add heatmap scale if enabled
+        const scaleBar = this.createHeatmapScale();
+        if (scaleBar) {
+          footer.appendChild(scaleBar);
         }
   
         wrapper.appendChild(footer);

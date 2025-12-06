@@ -1065,4 +1065,47 @@ padding: 0 !important;
     margin-left: 8px;
 }
 
+/* Heatmap scale bar */
+.lumina-heatmap-scale {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 12px 0;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+.lumina-heatmap-scale-item {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.lumina-heatmap-scale-label {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.lumina-heatmap-scale-bar {
+    height: 20px;
+    border-radius: 2px;
+    border: 1px solid #ccc;
+}
+
+.lumina-heatmap-scale-minmax {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #666;
+}
+
+.lumina-heatmap-scale-min,
+.lumina-heatmap-scale-max {
+    font-weight: 500;
+}
+
 /* Heatmap applied in-table: uses cell backgrounds only */
