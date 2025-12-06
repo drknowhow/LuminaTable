@@ -302,8 +302,10 @@ ui <- fluidPage(
       radioButtons("heatmap_palette", "Palette:", inline = TRUE,
                    choices = c("Blues", "Greens", "Reds", "Viridis", "Custom"), selected = "Blues"),
       fluidRow(
-        column(6, textInput("heatmap_color_low", "Custom low color:", value = "#f7fbff")),
-        column(6, textInput("heatmap_color_high", "Custom high color:", value = "#08306b"))
+        column(3, textInput("heatmap_color_low", "Custom low color:", value = "#f7fbff")),
+        column(3, textInput("heatmap_color_high", "Custom high color:", value = "#08306b")),
+        column(3, checkboxInput("heatmap_show_values", "Show Values in Cells", TRUE)),
+        column(3, checkboxInput("heatmap_show_scale", "Show Scale Bar", FALSE))
       )
     ),
     luminaOutput("table12")
@@ -587,7 +589,12 @@ server <- function(input, output, session) {
 
     if (isTRUE(input$heatmap_enable) && length(selected_cols) > 0) {
       tbl <- tbl |>
-        opt_heatmap(columns = selected_cols, palette = palette)
+        opt_heatmap(
+          columns = selected_cols, 
+          palette = palette,
+          showValues = isTRUE(input$heatmap_show_values),
+          showScale = isTRUE(input$heatmap_show_scale)
+        )
     }
 
     tbl |>
