@@ -62,6 +62,7 @@ class LuminaGrid {
     this.maximizable = config.maximizable !== false;
     this.minimizable = config.minimizable !== false;
     this.sortable = config.sortable !== false;
+    this.sortHighlight = config.sortHighlight !== false;
     this.colHide = config.colHide === true;
     this.title = config.title || null;
     this.caption = config.caption || null;
@@ -1008,6 +1009,13 @@ class LuminaGrid {
       const th = document.createElement("th");
       th.setAttribute("data-column-id", col);
       if (headerAlign) th.style.textAlign = headerAlign;
+      
+      // Apply sort highlight to header if column is sorted
+      const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === col);
+      if (isSorted) {
+        th.classList.add("lumina-sorted-column");
+      }
+      
       if (this.layoutHeaderBgColor) th.style.backgroundColor = this.layoutHeaderBgColor;
       if (this.layoutHeaderColor) th.style.color = this.layoutHeaderColor;
       if (this.layoutHeaderFontWeight) th.style.fontWeight = this.layoutHeaderFontWeight;
@@ -1335,6 +1343,12 @@ class LuminaGrid {
           
           const td = document.createElement("td");
           if (this.layoutTextAlign) td.style.textAlign = this.layoutTextAlign;
+          
+          // Apply sort highlight to cell if column is sorted
+          const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === colName);
+          if (isSorted) {
+            td.classList.add("lumina-sorted-column");
+          }
           
           // Check if this column allows HTML (Sparklines)
           if (this.htmlCols.includes(colName)) {
@@ -1897,6 +1911,13 @@ class LuminaGrid {
       const th = document.createElement("th");
       th.setAttribute("data-column-id", col);
       if (headerAlign) th.style.textAlign = headerAlign;
+      
+      // Apply sort highlight to header if column is sorted
+      const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === col);
+      if (isSorted) {
+        th.classList.add("lumina-sorted-column");
+      }
+      
       if (this.layoutHeaderBgColor) th.style.backgroundColor = this.layoutHeaderBgColor;
       if (this.layoutHeaderColor) th.style.color = this.layoutHeaderColor;
       if (this.layoutHeaderFontWeight) th.style.fontWeight = this.layoutHeaderFontWeight;
@@ -2219,6 +2240,13 @@ class LuminaGrid {
           
           const td = document.createElement("td");
           if (this.layoutTextAlign) td.style.textAlign = this.layoutTextAlign;
+          
+          // Apply sorted column highlight if enabled
+          const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === colName);
+          if (isSorted) {
+            td.classList.add("lumina-sorted-column");
+          }
+          
           if (this.htmlCols.includes(colName)) {
             td.innerHTML = cellData;
           } else {
@@ -2472,6 +2500,13 @@ class LuminaGrid {
           
           const td = document.createElement("td");
           if (this.layoutTextAlign) td.style.textAlign = this.layoutTextAlign;
+          
+          // Apply sorted column highlight if enabled
+          const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === colName);
+          if (isSorted) {
+            td.classList.add("lumina-sorted-column");
+          }
+          
           if (this.htmlCols.includes(colName)) {
             td.innerHTML = cellData;
           } else {

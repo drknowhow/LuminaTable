@@ -66,6 +66,7 @@ HTMLWidgets.widget({
         var maximizable = x.config.maximizable !== false;
         var minimizable = x.config.minimizable !== false;
         var sortable = x.config.sortable !== false;
+        var sortHighlight = x.config.sortHighlight !== false;
         var colHide = x.config.colHide === true;
         var title = x.config.title || null;
         var caption = x.config.caption || null;
@@ -120,6 +121,7 @@ HTMLWidgets.widget({
             maximizable: maximizable,
             minimizable: minimizable,
             sortable: sortable,
+            sortHighlight: sortHighlight,
             colHide: colHide,
             title: title,
             caption: caption,

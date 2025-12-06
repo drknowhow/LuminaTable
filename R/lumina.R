@@ -7,6 +7,7 @@
 #' @param maximizable Logical. Enable fullscreen expand button in top-right corner?
 #' @param minimizable Logical. Enable minimize button to collapse table with smooth animation?
 #' @param sortable Logical. Enable column sorting? Click once for ascending, twice for descending, three times to restore original order.
+#' @param sortHighlight Logical. Highlight sorted columns with a faded background color. Default: TRUE.
 #' @param colHide Logical. Show eye icon on each column header to hide/show columns? Only works when column toggle dropdown is enabled via opt_buttons().
 #' @param title Character. Optional title displayed above the table.
 #' @param caption Character. Optional caption displayed below the table.
@@ -14,7 +15,7 @@
 #' @import htmlwidgets
 #' @importFrom jsonlite toJSON
 #' @export
-lumina <- function(data, width = "100%", height = NULL, elementId = NULL, maximizable = TRUE, minimizable = TRUE, sortable = TRUE, colHide = FALSE, title = NULL, caption = NULL) {
+lumina <- function(data, width = "100%", height = NULL, elementId = NULL, maximizable = TRUE, minimizable = TRUE, sortable = TRUE, sortHighlight = TRUE, colHide = FALSE, title = NULL, caption = NULL) {
   
   # 1. Extract Column Names (including the internal __rowIndex__ column)
   cols <- c(colnames(data), "__rowIndex__")
@@ -50,6 +51,7 @@ lumina <- function(data, width = "100%", height = NULL, elementId = NULL, maximi
       maximizable = maximizable,
       minimizable = minimizable,
       sortable = sortable,
+      sortHighlight = sortHighlight,
       colHide = colHide,
       title = title,
       caption = caption
