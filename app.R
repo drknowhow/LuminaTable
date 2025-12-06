@@ -559,9 +559,10 @@ server <- function(input, output, session) {
                   caption = "Rules highlight Price, Stock, Rating, and Category columns")
 
     if (isTRUE(input$condformat_enable)) {
-      tbl <- do.call(
-        opt_condformat,
-        c(list(tbl), cond_rules(), list(edit = isTRUE(input$condformat_edit)))
+      tbl <- opt_condformat(
+        tbl, 
+        rules = cond_rules(), 
+        edit = isTRUE(input$condformat_edit)
       )
     }
 
