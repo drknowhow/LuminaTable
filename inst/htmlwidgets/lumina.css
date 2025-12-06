@@ -1065,47 +1065,51 @@ padding: 0 !important;
     margin-left: 8px;
 }
 
-/* Heatmap scale bar */
-.lumina-heatmap-scale {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    padding: 12px 0;
+/* Heatmap scale footer - aligned under table columns */
+.lumina-heatmap-scale-footer {
+    background: white;
     border-top: 1px solid #e0e0e0;
-    margin-top: 8px;
-    font-size: 12px;
+    overflow-x: auto;
 }
 
-.lumina-heatmap-scale-item {
-    flex: 1;
-    min-width: 200px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+.lumina-heatmap-scale-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.lumina-heatmap-scale-cell {
+    text-align: center;
+    padding: 8px 4px;
+    border-top: 1px solid #e0e0e0;
+    font-size: 12px;
 }
 
 .lumina-heatmap-scale-label {
     font-weight: 600;
     color: #333;
     font-size: 11px;
+    margin-bottom: 4px;
 }
 
 .lumina-heatmap-scale-bar {
     height: 20px;
     border-radius: 2px;
     border: 1px solid #ccc;
+    width: 100%;
+    margin: 4px 0;
 }
 
-.lumina-heatmap-scale-minmax {
+.lumina-heatmap-scale-values {
     display: flex;
     justify-content: space-between;
-    font-size: 10px;
+    font-size: 9px;
     color: #666;
+    gap: 2px;
 }
 
-.lumina-heatmap-scale-min,
-.lumina-heatmap-scale-max {
-    font-weight: 500;
+.lumina-heatmap-scale-values span {
+    white-space: nowrap;
+    flex: 0 0 auto;
 }
 
 /* Heatmap applied in-table: uses cell backgrounds only */

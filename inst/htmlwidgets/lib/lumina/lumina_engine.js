@@ -72,6 +72,11 @@ class LuminaGrid {
     this.originalCondFormatRules = this.cloneCondFormatRules(this.condFormatRules);
     this.condFormatDirty = false;
     this.activeCondFormatDropdown = null;
+    
+    // Debug: Log conditional format rules
+    if (this.condFormatRules && this.condFormatRules.length > 0) {
+      console.log("DEBUG: condFormatRules loaded:", this.condFormatRules);
+    }
 
     this.performance = config.performance || {};
 
@@ -332,47 +337,102 @@ class LuminaGrid {
       return null;
     }
 
-    const scaleContainer = document.createElement("div");
-    scaleContainer.className = "lumina-heatmap-scale";
+    // Create a scale footer that aligns with table columns
+    const scaleFooter = document.createElement("div");
+    scaleFooter.className = "lumina-heatmap-scale-footer";
     
-    // Create scale bar for each heatmap column
-    Object.keys(this.heatmapColumns).forEach(colName => {
+    // Create an inline table for proper column alignment
+    const scaleTable = document.createElement("table");
+    scaleTable.className = "lumina-heatmap-scale-table";
+    scaleTable.style.width = "100%";
+    scaleTable.style.borderCollapse = "collapse";
+    
+    const scaleTbody = document.createElement("tbody");
+    const scaleRow = document.createElement("tr");
+    
+    // Create cells for each visible column
+    this.state.visibleColumns.forEach(colName => {
+      const scaleCell = document.createElement("td");
+      scaleCell.className = "lumina-heatmap-scale-cell";
+      scaleCell.style.textAlign = "center";
+      scaleCell.style.padding = "8px 4px";
+      scaleCell.style.borderTop = "1px solid #e0e0e0";
+      
       const entry = this.heatmapColumns[colName];
-      const { min, max } = entry;
       
-      const scaleItem = document.createElement("div");
-      scaleItem.className = "lumina-heatmap-scale-item";
+      if (entry) {
+        // This column has a heatmap
+        const { min, max } = entry;
+        
+        const container = document.createElement("div");
+        container.style.display = "flex";
+        container.style.flexDirection = "column";
+        container.style.gap = "4px";
+        
+        // Label
+        const label = document.createElement("div");
+        label.className = "lumina-heatmap-scale-label";
+        label.style.fontSize = "10px";
+        label.style.fontWeight = "600";
+        label.style.color = "#333";
+        label.innerText = colName;
+        container.appendChild(label);
+        
+        // Gradient bar
+        const bar = document.createElement("div");
+        bar.className = "lumina-heatmap-scale-bar";
+        bar.style.height = "20px";
+        bar.style.borderRadius = "2px";
+        bar.style.border = "1px solid #ccc";
+        bar.style.width = "100%";
+        
+        // Create gradient background
+        const stops = this.heatmapPalette.map((color, idx) => {
+          const pct = (idx / (this.heatmapPalette.length - 1)) * 100;
+          return `${color} ${pct}%`;
+        }).join(", ");
+        bar.style.background = `linear-gradient(to right, ${stops})`;
+        container.appendChild(bar);
+        
+        // Min/Max/Median values
+        const values = document.createElement("div");
+        values.className = "lumina-heatmap-scale-values";
+        values.style.display = "flex";
+        values.style.justifyContent = "space-between";
+        values.style.fontSize = "9px";
+        values.style.color = "#666";
+        
+        const minSpan = document.createElement("span");
+        minSpan.innerText = `Min: ${min.toFixed(2)}`;
+        
+        // Calculate median
+        const sourceData = this.data;
+        const colIndex = this.columns.indexOf(colName);
+        const values_arr = sourceData.map(row => Number(row[colIndex])).filter(v => Number.isFinite(v)).sort((a, b) => a - b);
+        const median = values_arr.length > 0 ? values_arr[Math.floor(values_arr.length / 2)] : 0;
+        
+        const medianSpan = document.createElement("span");
+        medianSpan.innerText = `Median: ${median.toFixed(2)}`;
+        
+        const maxSpan = document.createElement("span");
+        maxSpan.innerText = `Max: ${max.toFixed(2)}`;
+        
+        values.appendChild(minSpan);
+        values.appendChild(medianSpan);
+        values.appendChild(maxSpan);
+        container.appendChild(values);
+        
+        scaleCell.appendChild(container);
+      }
       
-      // Column label
-      const label = document.createElement("span");
-      label.className = "lumina-heatmap-scale-label";
-      label.innerText = colName;
-      scaleItem.appendChild(label);
-      
-      // Color gradient bar
-      const bar = document.createElement("div");
-      bar.className = "lumina-heatmap-scale-bar";
-      
-      // Create gradient background
-      const colors = this.heatmapPalette.join(", ");
-      const stops = this.heatmapPalette.map((color, idx) => {
-        const pct = (idx / (this.heatmapPalette.length - 1)) * 100;
-        return `${color} ${pct}%`;
-      }).join(", ");
-      bar.style.background = `linear-gradient(to right, ${stops})`;
-      
-      scaleItem.appendChild(bar);
-      
-      // Min/Max labels
-      const minMax = document.createElement("div");
-      minMax.className = "lumina-heatmap-scale-minmax";
-      minMax.innerHTML = `<span class="lumina-heatmap-scale-min">${min.toFixed(2)}</span><span class="lumina-heatmap-scale-max">${max.toFixed(2)}</span>`;
-      scaleItem.appendChild(minMax);
-      
-      scaleContainer.appendChild(scaleItem);
+      scaleRow.appendChild(scaleCell);
     });
     
-    return scaleContainer;
+    scaleTbody.appendChild(scaleRow);
+    scaleTable.appendChild(scaleTbody);
+    scaleFooter.appendChild(scaleTable);
+    
+    return scaleFooter;
   }
 
   sort(colName) {
@@ -489,7 +549,11 @@ class LuminaGrid {
 
   getCondFormatRulesForColumn(colName) {
     if (!this.condFormatRules || this.condFormatRules.length === 0) return [];
-    return this.condFormatRules.filter(r => r && r.column === colName);
+    const filtered = this.condFormatRules.filter(r => r && r.column === colName);
+    if (filtered.length > 0) {
+      console.log(`DEBUG: Found ${filtered.length} rules for column "${colName}":`, filtered);
+    }
+    return filtered;
   }
 
   markCondFormatDirty() {
@@ -1852,6 +1916,11 @@ class LuminaGrid {
 
   applyConditionalFormatting(td, tr, colName, rawValue) {
     if (!this.condFormatRules || this.condFormatRules.length === 0) return;
+
+    const colRules = this.condFormatRules.filter(r => r && r.column === colName);
+    if (colRules.length > 0) {
+      console.log(`DEBUG applyConditionalFormatting for column "${colName}" with value "${rawValue}":`, colRules);
+    }
 
     const stringValue = rawValue === null || rawValue === undefined ? '' : String(rawValue);
     const numericValue = parseFloat(stringValue);

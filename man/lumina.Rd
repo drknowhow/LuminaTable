@@ -12,6 +12,7 @@ lumina(
   maximizable = TRUE,
   minimizable = TRUE,
   sortable = TRUE,
+  sortHighlight = TRUE,
   colHide = FALSE,
   title = NULL,
   caption = NULL
@@ -31,6 +32,8 @@ lumina(
 \item{minimizable}{Logical. Enable minimize button to collapse table with smooth animation?}
 
 \item{sortable}{Logical. Enable column sorting? Click once for ascending, twice for descending, three times to restore original order.}
+
+\item{sortHighlight}{Logical. Highlight sorted columns with a faded background color. Default: TRUE.}
 
 \item{colHide}{Logical. Show eye icon on each column header to hide/show columns? Only works when column toggle dropdown is enabled via opt_buttons().}
 

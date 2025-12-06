@@ -1,8 +1,6 @@
 # Build and Install LuminaTable Package
 # Run this script to properly install the package so library() works
 
-# remove.packages("LuminaTable")
-
 # Clean up any cached/compiled files
 cat("\nStep 0.5: Cleaning build artifacts...\n")
 pkg_dir <- "u:/R/LuminaTable/LuminaTable"

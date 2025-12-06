@@ -4,7 +4,13 @@
 \alias{opt_heatmap}
 \title{Apply a heatmap to table cells}
 \usage{
-opt_heatmap(w, columns, palette = c("#f7fbff", "#6baed6", "#08306b"))
+opt_heatmap(
+  w,
+  columns,
+  palette = c("#f7fbff", "#6baed6", "#08306b"),
+  showValues = TRUE,
+  showScale = FALSE
+)
 }
 \arguments{
 \item{w}{A lumina widget}
@@ -12,7 +18,11 @@ opt_heatmap(w, columns, palette = c("#f7fbff", "#6baed6", "#08306b"))
 \item{columns}{Character vector of column names to heatmap. Must be numeric in the data.}
 
 \item{palette}{Character vector of 2-5 hex colors used for a linear gradient (low → high).}
+
+\item{showValues}{Logical. Show numeric values in cells (TRUE) or hide content and show only color (FALSE). Default: TRUE.}
+
+\item{showScale}{Logical. Add a color scale bar in the table footer showing the gradient mapping. Default: FALSE.}
 }
 \description{
-Colors specified numeric columns using a low→high gradient. The heatmap is applied directly to the table cells (no separate block).
+Colors specified numeric columns using a low→high gradient. The heatmap is applied directly to the table cells.
 }
