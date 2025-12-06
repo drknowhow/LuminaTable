@@ -72,11 +72,6 @@ class LuminaGrid {
     this.originalCondFormatRules = this.cloneCondFormatRules(this.condFormatRules);
     this.condFormatDirty = false;
     this.activeCondFormatDropdown = null;
-    
-    // Debug: Log conditional format rules
-    if (this.condFormatRules && this.condFormatRules.length > 0) {
-      console.log("DEBUG: condFormatRules loaded:", this.condFormatRules);
-    }
 
     this.performance = config.performance || {};
 
@@ -549,11 +544,7 @@ class LuminaGrid {
 
   getCondFormatRulesForColumn(colName) {
     if (!this.condFormatRules || this.condFormatRules.length === 0) return [];
-    const filtered = this.condFormatRules.filter(r => r && r.column === colName);
-    if (filtered.length > 0) {
-      console.log(`DEBUG: Found ${filtered.length} rules for column "${colName}":`, filtered);
-    }
-    return filtered;
+    return this.condFormatRules.filter(r => r && r.column === colName);
   }
 
   markCondFormatDirty() {
@@ -1916,11 +1907,6 @@ class LuminaGrid {
 
   applyConditionalFormatting(td, tr, colName, rawValue) {
     if (!this.condFormatRules || this.condFormatRules.length === 0) return;
-
-    const colRules = this.condFormatRules.filter(r => r && r.column === colName);
-    if (colRules.length > 0) {
-      console.log(`DEBUG applyConditionalFormatting for column "${colName}" with value "${rawValue}":`, colRules);
-    }
 
     const stringValue = rawValue === null || rawValue === undefined ? '' : String(rawValue);
     const numericValue = parseFloat(stringValue);
