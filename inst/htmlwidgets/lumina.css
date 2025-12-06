@@ -143,6 +143,12 @@
     background-color: rgba(9, 105, 218, 0.05) !important;
 }
 
+.lumina-table thead th.lumina-sorted-column-border,
+.lumina-table tbody td.lumina-sorted-column-border {
+    border-left: 3px solid rgba(9, 105, 218, 0.4) !important;
+    border-right: 3px solid rgba(9, 105, 218, 0.4) !important;
+}
+
 .lumina-checkbox {
     cursor: pointer;
     width: 16px;
@@ -593,6 +599,8 @@ padding: 0 !important;
 .lumina-midnight .lumina-table tbody tr.lumina-selected td { background-color: #4a148c !important; color: #e1bee7 !important; }
 .lumina-midnight .lumina-table thead th.lumina-sorted-column,
 .lumina-midnight .lumina-table tbody td.lumina-sorted-column { background-color: rgba(171, 71, 188, 0.08) !important; }
+.lumina-midnight .lumina-table thead th.lumina-sorted-column-border,
+.lumina-midnight .lumina-table tbody td.lumina-sorted-column-border { border-left: 3px solid rgba(171, 71, 188, 0.5) !important; border-right: 3px solid rgba(171, 71, 188, 0.5) !important; }
 .lumina-midnight .lumina-checkbox { accent-color: #ab47bc !important; }
 
 /* CORPORATE THEME */
@@ -625,6 +633,8 @@ padding: 0 !important;
 .lumina-corporate .lumina-table tbody tr.lumina-selected td { background-color: #c8e6c9 !important; color: #1b5e20 !important; font-weight: 500; }
 .lumina-corporate .lumina-table thead th.lumina-sorted-column,
 .lumina-corporate .lumina-table tbody td.lumina-sorted-column { background-color: rgba(33, 115, 70, 0.08) !important; }
+.lumina-corporate .lumina-table thead th.lumina-sorted-column-border,
+.lumina-corporate .lumina-table tbody td.lumina-sorted-column-border { border-left: 3px solid rgba(33, 115, 70, 0.6) !important; border-right: 3px solid rgba(33, 115, 70, 0.6) !important; }
 .lumina-corporate .lumina-checkbox { accent-color: #217346 !important; }
 
 /* CYBER THEME */
@@ -664,6 +674,8 @@ padding: 0 !important;
 .lumina-cyber .lumina-table tbody tr.lumina-selected td { background-color: #003300 !important; color: #00ff41 !important; box-shadow: inset 0 0 10px rgba(0, 255, 65, 0.3) !important; font-weight: bold; }
 .lumina-cyber .lumina-table thead th.lumina-sorted-column,
 .lumina-cyber .lumina-table tbody td.lumina-sorted-column { background-color: rgba(0, 255, 65, 0.05) !important; box-shadow: inset 0 0 5px rgba(0, 255, 65, 0.1) !important; }
+.lumina-cyber .lumina-table thead th.lumina-sorted-column-border,
+.lumina-cyber .lumina-table tbody td.lumina-sorted-column-border { border-left: 3px solid rgba(0, 255, 65, 0.6) !important; border-right: 3px solid rgba(0, 255, 65, 0.6) !important; box-shadow: inset 0 0 5px rgba(0, 255, 65, 0.2) !important; }
 .lumina-cyber .lumina-checkbox { accent-color: #00ff41 !important; }
 
 /* SIMPLE THEME */
@@ -693,6 +705,8 @@ padding: 0 !important;
 .lumina-simple .lumina-table tbody tr.lumina-selected td { background-color: #e0e0e0 !important; color: #000 !important; font-weight: 500; }
 .lumina-simple .lumina-table thead th.lumina-sorted-column,
 .lumina-simple .lumina-table tbody td.lumina-sorted-column { background-color: rgba(51, 51, 51, 0.04) !important; }
+.lumina-simple .lumina-table thead th.lumina-sorted-column-border,
+.lumina-simple .lumina-table tbody td.lumina-sorted-column-border { border-left: 3px solid rgba(51, 51, 51, 0.4) !important; border-right: 3px solid rgba(51, 51, 51, 0.4) !important; }
 .lumina-simple .lumina-checkbox { accent-color: #333 !important; }
 
 /* SUNSET THEME */
@@ -725,6 +739,8 @@ padding: 0 !important;
 .lumina-sunset .lumina-table tbody tr.lumina-selected td { background: linear-gradient(135deg, #ffd1dc 0%, #ffe4ec 100%) !important; color: #c2185b !important; font-weight: 500; border-bottom: 1px solid #ff9a9e !important; }
 .lumina-sunset .lumina-table thead th.lumina-sorted-column,
 .lumina-sunset .lumina-table tbody td.lumina-sorted-column { background: linear-gradient(135deg, rgba(255, 154, 158, 0.08) 0%, rgba(254, 207, 239, 0.08) 100%) !important; }
+.lumina-sunset .lumina-table thead th.lumina-sorted-column-border,
+.lumina-sunset .lumina-table tbody td.lumina-sorted-column-border { border-left: 3px solid rgba(255, 154, 158, 0.6) !important; border-right: 3px solid rgba(255, 154, 158, 0.6) !important; }
 .lumina-sunset .lumina-checkbox { accent-color: #ff9a9e !important; }
 
 /* AUTO THEME */
@@ -734,6 +750,8 @@ padding: 0 !important;
 .lumina-auto .lumina-table tbody tr.lumina-selected td { background-color: #cce5ff !important; color: #004085 !important; }
 .lumina-auto .lumina-table thead th.lumina-sorted-column,
 .lumina-auto .lumina-table tbody td.lumina-sorted-column { background-color: rgba(9, 105, 218, 0.05) !important; }
+.lumina-auto .lumina-table thead th.lumina-sorted-column-border,
+.lumina-auto .lumina-table tbody td.lumina-sorted-column-border { border-left: 3px solid rgba(9, 105, 218, 0.4) !important; border-right: 3px solid rgba(9, 105, 218, 0.4) !important; }
 .lumina-auto .lumina-checkbox { accent-color: #0969da !important; }
 @media (prefers-color-scheme: dark) {
     .lumina-auto .lumina-wrapper { background-color: #1e1e2f !important; border-color: #333 !important; }
@@ -767,6 +785,8 @@ padding: 0 !important;
   .lumina-auto .lumina-table tbody tr.lumina-selected td { background-color: #4a148c !important; color: #e1bee7 !important; }
   .lumina-auto .lumina-table thead th.lumina-sorted-column,
   .lumina-auto .lumina-table tbody td.lumina-sorted-column { background-color: rgba(171, 71, 188, 0.08) !important; }
+  .lumina-auto .lumina-table thead th.lumina-sorted-column-border,
+  .lumina-auto .lumina-table tbody td.lumina-sorted-column-border { border-left: 3px solid rgba(171, 71, 188, 0.5) !important; border-right: 3px solid rgba(171, 71, 188, 0.5) !important; }
   .lumina-auto .lumina-checkbox { accent-color: #ab47bc !important; }
 }/* =========================================
    EXPAND/FULLSCREEN BUTTON

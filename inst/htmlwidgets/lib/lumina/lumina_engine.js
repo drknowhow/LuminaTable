@@ -1010,10 +1010,16 @@ class LuminaGrid {
       th.setAttribute("data-column-id", col);
       if (headerAlign) th.style.textAlign = headerAlign;
       
-      // Apply sort highlight to header if column is sorted
+      // Apply sort highlight to header if column is sorted - use border if heatmap/conditional formatting present
       const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === col);
       if (isSorted) {
-        th.classList.add("lumina-sorted-column");
+        const hasHeatmap = this.heatmapColumns && this.heatmapColumns[col];
+        const hasCondFormat = this.condFormatRules && this.condFormatRules.some(r => r && r.column === col);
+        if (hasHeatmap || hasCondFormat) {
+          th.classList.add("lumina-sorted-column-border");
+        } else {
+          th.classList.add("lumina-sorted-column");
+        }
       }
       
       if (this.layoutHeaderBgColor) th.style.backgroundColor = this.layoutHeaderBgColor;
@@ -1344,12 +1350,6 @@ class LuminaGrid {
           const td = document.createElement("td");
           if (this.layoutTextAlign) td.style.textAlign = this.layoutTextAlign;
           
-          // Apply sort highlight to cell if column is sorted
-          const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === colName);
-          if (isSorted) {
-            td.classList.add("lumina-sorted-column");
-          }
-          
           // Check if this column allows HTML (Sparklines)
           if (this.htmlCols.includes(colName)) {
               td.innerHTML = cellData;
@@ -1363,6 +1363,18 @@ class LuminaGrid {
           }
           this.applyHeatmap(td, colName, cellData);
           this.applyConditionalFormatting(td, tr, colName, cellData);
+          
+          // Apply sort highlight - use border if heatmap/conditional formatting present
+          const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === colName);
+          if (isSorted) {
+            const hasHeatmap = this.heatmapColumns && this.heatmapColumns[colName];
+            const hasCondFormat = this.condFormatRules && this.condFormatRules.some(r => r && r.column === colName);
+            if (hasHeatmap || hasCondFormat) {
+              td.classList.add("lumina-sorted-column-border");
+            } else {
+              td.classList.add("lumina-sorted-column");
+            }
+          }
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -1912,10 +1924,16 @@ class LuminaGrid {
       th.setAttribute("data-column-id", col);
       if (headerAlign) th.style.textAlign = headerAlign;
       
-      // Apply sort highlight to header if column is sorted
+      // Apply sort highlight to header if column is sorted - use border if heatmap/conditional formatting present
       const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === col);
       if (isSorted) {
-        th.classList.add("lumina-sorted-column");
+        const hasHeatmap = this.heatmapColumns && this.heatmapColumns[col];
+        const hasCondFormat = this.condFormatRules && this.condFormatRules.some(r => r && r.column === col);
+        if (hasHeatmap || hasCondFormat) {
+          th.classList.add("lumina-sorted-column-border");
+        } else {
+          th.classList.add("lumina-sorted-column");
+        }
       }
       
       if (this.layoutHeaderBgColor) th.style.backgroundColor = this.layoutHeaderBgColor;
@@ -2241,12 +2259,6 @@ class LuminaGrid {
           const td = document.createElement("td");
           if (this.layoutTextAlign) td.style.textAlign = this.layoutTextAlign;
           
-          // Apply sorted column highlight if enabled
-          const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === colName);
-          if (isSorted) {
-            td.classList.add("lumina-sorted-column");
-          }
-          
           if (this.htmlCols.includes(colName)) {
             td.innerHTML = cellData;
           } else {
@@ -2261,6 +2273,18 @@ class LuminaGrid {
           }
           this.applyHeatmap(td, colName, cellData);
           this.applyConditionalFormatting(td, tr, colName, cellData);
+          
+          // Apply sorted column highlight if enabled - use border if heatmap/conditional formatting present
+          const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === colName);
+          if (isSorted) {
+            const hasHeatmap = this.heatmapColumns && this.heatmapColumns[colName];
+            const hasCondFormat = this.condFormatRules && this.condFormatRules.some(r => r && r.column === colName);
+            if (hasHeatmap || hasCondFormat) {
+              td.classList.add("lumina-sorted-column-border");
+            } else {
+              td.classList.add("lumina-sorted-column");
+            }
+          }
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -2501,12 +2525,6 @@ class LuminaGrid {
           const td = document.createElement("td");
           if (this.layoutTextAlign) td.style.textAlign = this.layoutTextAlign;
           
-          // Apply sorted column highlight if enabled
-          const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === colName);
-          if (isSorted) {
-            td.classList.add("lumina-sorted-column");
-          }
-          
           if (this.htmlCols.includes(colName)) {
             td.innerHTML = cellData;
           } else {
@@ -2521,6 +2539,18 @@ class LuminaGrid {
           }
           this.applyHeatmap(td, colName, cellData);
           this.applyConditionalFormatting(td, tr, colName, cellData);
+          
+          // Apply sorted column highlight if enabled - use border if heatmap/conditional formatting present
+          const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === colName);
+          if (isSorted) {
+            const hasHeatmap = this.heatmapColumns && this.heatmapColumns[colName];
+            const hasCondFormat = this.condFormatRules && this.condFormatRules.some(r => r && r.column === colName);
+            if (hasHeatmap || hasCondFormat) {
+              td.classList.add("lumina-sorted-column-border");
+            } else {
+              td.classList.add("lumina-sorted-column");
+            }
+          }
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
