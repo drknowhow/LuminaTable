@@ -47,7 +47,7 @@ class LuminaGrid {
     this.buttonsColumnView = config.buttonsColumnView || {
       enabled: config.buttonsColumnToggle !== false,
       position: config.buttonsPosition || "top",
-      visibleColumns: config.buttonsVisibleColumns || this.columns
+      visibleColumns: (config.buttonsVisibleColumns || this.columns).filter(col => col !== '__rowIndex__')
     };
     
     this.buttonsDownloads = config.buttonsDownloads || {
@@ -57,6 +57,10 @@ class LuminaGrid {
     };
 
     this.heatmap = config.heatmap || null;
+    
+    // Edit configuration with validation and dropdowns
+    this.editConfig = config.edit || {};
+    this.editColumns = this.editConfig.columns || {};
     
     this.initialVisibleColumns = [...(this.buttonsColumnView.visibleColumns || this.columns)]; // Store initial state
     this.maximizable = config.maximizable !== false;
@@ -153,15 +157,21 @@ class LuminaGrid {
       page: 1,
       rowsPerPage: this.paginationLimit,
       selectedRows: new Map(), // Map of originalRowIndex -> true (was Set, now Map)
+      selectedColumns: new Set(), // Track selected columns when selectionTarget = "columns"
       hiddenRows: new Set(), // Track hidden row indices
       columnFilters: {},
       lastSelectedRow: null,
+      lastSelectedColumn: null,
+      selectionTarget: "rows", // rows | columns
       visibleColumns: [...(this.buttonsColumnView.visibleColumns || this.columns)],
       isFullscreen: false,
       isMinimized: false,
       wasMinimizedBeforeSearch: false,
       columnDropdownOpen: false,
-      downloadDropdownOpen: false
+      downloadDropdownOpen: false,
+      editModeEnabled: false,
+      pendingEdits: new Map(), // Track pending edits: (rowIndex, colName) -> value
+      hasPendingEdits: false
     };
 
     // DOM References (to preserve search input focus)
@@ -188,6 +198,55 @@ class LuminaGrid {
   }
 
   // --- CORE LOGIC ---
+
+  showConfirmation(message, onConfirm, onCancel) {
+    if (!this.refs.wrapper) {
+      // Fallback to native confirm if wrapper not available
+      const result = confirm(message);
+      if (result) onConfirm();
+      else if (onCancel) onCancel();
+      return;
+    }
+
+    // Create modal
+    const modal = document.createElement("div");
+    modal.className = "lumina-confirm-modal light";
+    
+    const content = document.createElement("div");
+    content.className = "lumina-confirm-content";
+    
+    const messageDiv = document.createElement("div");
+    messageDiv.className = "lumina-confirm-message";
+    messageDiv.textContent = message;
+    
+    const buttonsDiv = document.createElement("div");
+    buttonsDiv.className = "lumina-confirm-buttons";
+    
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "lumina-confirm-btn lumina-confirm-cancel";
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.onclick = () => {
+      modal.classList.add("slideout");
+      setTimeout(() => modal.remove(), 300);
+      if (onCancel) onCancel();
+    };
+    
+    const confirmBtn = document.createElement("button");
+    confirmBtn.className = "lumina-confirm-btn lumina-confirm-confirm";
+    confirmBtn.textContent = "Confirm";
+    confirmBtn.onclick = () => {
+      modal.classList.add("slideout");
+      setTimeout(() => modal.remove(), 300);
+      onConfirm();
+    };
+    
+    buttonsDiv.appendChild(cancelBtn);
+    buttonsDiv.appendChild(confirmBtn);
+    content.appendChild(messageDiv);
+    content.appendChild(buttonsDiv);
+    modal.appendChild(content);
+    this.refs.wrapper.appendChild(modal);
+  }
 
   updateSearch(term) {
     if (this.serverSide) {
@@ -428,6 +487,83 @@ class LuminaGrid {
     scaleFooter.appendChild(scaleTable);
     
     return scaleFooter;
+  }
+
+  createHeatmapScaleRow() {
+    if (!this.heatmap || !this.heatmap.showScale || !this.heatmapColumns || Object.keys(this.heatmapColumns).length === 0) {
+      return null;
+    }
+
+    const thead = document.createElement("thead");
+    thead.className = "lumina-heatmap-scale-header";
+    const scaleRow = document.createElement("tr");
+    scaleRow.className = "lumina-heatmap-scale-row";
+    
+    // Create cells for each visible column
+    this.state.visibleColumns.forEach(colName => {
+      const scaleCell = document.createElement("th");
+      scaleCell.className = "lumina-heatmap-scale-cell";
+      scaleCell.style.textAlign = "center";
+      scaleCell.style.padding = "8px 4px";
+      scaleCell.style.backgroundColor = "#f8f9fa";
+      scaleCell.style.borderBottom = "2px solid #dee2e6";
+      
+      const entry = this.heatmapColumns[colName];
+      
+      if (entry) {
+        // This column has a heatmap
+        const { min, max } = entry;
+        
+        const container = document.createElement("div");
+        container.style.display = "flex";
+        container.style.flexDirection = "column";
+        container.style.gap = "2px";
+        container.style.alignItems = "center";
+        
+        // Gradient bar
+        const bar = document.createElement("div");
+        bar.className = "lumina-heatmap-scale-bar";
+        bar.style.height = "16px";
+        bar.style.borderRadius = "2px";
+        bar.style.border = "1px solid #ccc";
+        bar.style.width = "90%";
+        
+        // Create gradient background
+        const stops = this.heatmapPalette.map((color, idx) => {
+          const pct = (idx / (this.heatmapPalette.length - 1)) * 100;
+          return `${color} ${pct}%`;
+        }).join(", ");
+        bar.style.background = `linear-gradient(to right, ${stops})`;
+        container.appendChild(bar);
+        
+        // Min/Max values
+        const values = document.createElement("div");
+        values.className = "lumina-heatmap-scale-values";
+        values.style.display = "flex";
+        values.style.justifyContent = "space-between";
+        values.style.width = "90%";
+        values.style.fontSize = "9px";
+        values.style.color = "#666";
+        values.style.marginTop = "2px";
+        
+        const minSpan = document.createElement("span");
+        minSpan.innerText = min.toFixed(1);
+        
+        const maxSpan = document.createElement("span");
+        maxSpan.innerText = max.toFixed(1);
+        
+        values.appendChild(minSpan);
+        values.appendChild(maxSpan);
+        container.appendChild(values);
+        
+        scaleCell.appendChild(container);
+      }
+      
+      scaleRow.appendChild(scaleCell);
+    });
+    
+    thead.appendChild(scaleRow);
+    return thead;
   }
 
   sort(colName) {
@@ -898,8 +1034,78 @@ class LuminaGrid {
       controlsContainer.appendChild(columnToggleWrapper);
     }
     
-    // Add hide selected rows button if selection is enabled
-    if (this.selectionEnabled) {
+    // Add Edit Mode checkbox directly to header
+    {
+      const editModeContainer = document.createElement("label");
+      editModeContainer.className = "lumina-edit-mode-container";
+      editModeContainer.style.display = "flex";
+      editModeContainer.style.alignItems = "center";
+      editModeContainer.style.gap = "6px";
+      editModeContainer.style.padding = "0 8px";
+      editModeContainer.style.cursor = "pointer";
+      editModeContainer.style.userSelect = "none";
+      
+      const editCheckbox = document.createElement("input");
+      editCheckbox.type = "checkbox";
+      editCheckbox.className = "lumina-edit-mode-checkbox";
+      editCheckbox.checked = this.state.editModeEnabled;
+      editCheckbox.onchange = (e) => {
+        const shouldEnable = e.target.checked;
+        
+        // If turning OFF and there are unsaved changes, ask for confirmation
+        if (!shouldEnable && this.state.hasPendingEdits) {
+          this.showConfirmation(
+            "You have unsaved changes. Discard them?",
+            () => {
+              // User confirmed - clear edits and disable
+              this.state.pendingEdits.clear();
+              this.state.hasPendingEdits = false;
+              if (this.refs.saveBtn) {
+                this.refs.saveBtn.style.display = "none";
+              }
+              this.state.editModeEnabled = false;
+              editLabel.style.color = "#24292f";
+              this.renderTable();
+            },
+            () => {
+              // User cancelled - recheck the checkbox
+              editCheckbox.checked = true;
+            }
+          );
+          return;
+        }
+        
+        this.state.editModeEnabled = shouldEnable;
+        editLabel.style.color = shouldEnable ? "#1a73e8" : "#24292f";
+        this.renderTable(); // Re-render to apply edit mode to cells
+      };
+      
+      const editLabel = document.createElement("span");
+      editLabel.textContent = "✏️ Edit Mode";
+      editLabel.style.fontSize = "13px";
+      editLabel.style.fontWeight = "500";
+      editLabel.style.color = this.state.editModeEnabled ? "#1a73e8" : "#24292f";
+      
+      editModeContainer.appendChild(editCheckbox);
+      editModeContainer.appendChild(editLabel);
+      controlsContainer.appendChild(editModeContainer);
+    }
+    
+    // Add Save button for pending edits
+    {
+      const saveBtn = document.createElement("button");
+      saveBtn.className = "lumina-button lumina-save-button";
+      saveBtn.innerHTML = "💾";
+      saveBtn.title = "Save pending edits";
+      saveBtn.style.display = this.state.hasPendingEdits ? "inline-block" : "none";
+      saveBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.commitPendingEdits();
+      };
+      this.refs.saveBtn = saveBtn;
+      controlsContainer.appendChild(saveBtn);
+    }
+        if (this.selectionEnabled) {
       const hideBtn = document.createElement("button");
       hideBtn.className = "lumina-button lumina-hide-button";
       hideBtn.innerHTML = "👁️‍🗨️ Hide Selected";
@@ -1082,6 +1288,11 @@ class LuminaGrid {
     // 3. Build Table Container
     const tableContainer = document.createElement("div");
     tableContainer.className = "lumina-container";
+    // Enable scrolling for large tables
+    if (this.layoutMaxHeight) {
+      tableContainer.style.maxHeight = this.layoutMaxHeight;
+      tableContainer.style.overflowY = "auto";
+    }
     this.refs.tableContainer = tableContainer;
 
     // Build Table
@@ -1119,6 +1330,30 @@ class LuminaGrid {
       const th = document.createElement("th");
       th.setAttribute("data-column-id", col);
       if (headerAlign) th.style.textAlign = headerAlign;
+
+      // Column selection visuals and interaction
+      if (this.state.selectionTarget === "columns") {
+        th.style.cursor = "pointer";
+        if (this.state.selectedColumns.has(col)) {
+          th.classList.add("lumina-column-selected");
+        }
+        th.onclick = (e) => {
+          e.stopPropagation();
+          this.handleColumnClick(col, e);
+        };
+      }
+
+      // Column selection visuals and interaction
+      if (this.state.selectionTarget === "columns") {
+        th.style.cursor = "pointer";
+        if (this.state.selectedColumns.has(col)) {
+          th.classList.add("lumina-column-selected");
+        }
+        th.onclick = (e) => {
+          e.stopPropagation();
+          this.handleColumnClick(col, e);
+        };
+      }
       
       // Apply sort highlight to header if column is sorted - use border if heatmap/conditional formatting present
       const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === col);
@@ -1327,6 +1562,14 @@ class LuminaGrid {
         const onCondIcon = target.classList && target.classList.contains('lumina-condformat-icon');
         const isFormControl = ['INPUT','SELECT','TEXTAREA','OPTION','BUTTON'].includes(target.tagName);
         if (inCondDropdown || onCondIcon || isFormControl) return;
+
+        // When selectionTarget is columns, clicking toggles selection instead of sorting
+        if (this.state.selectionTarget === "columns") {
+          e.stopPropagation();
+          this.handleColumnClick(col, e);
+          return;
+        }
+
         this.sort(col);
       };
       th.setAttribute("tabindex", "0");
@@ -1334,7 +1577,11 @@ class LuminaGrid {
         if (e.key === 'Enter' || e.key === ' ') {
           if (e.target.tagName !== 'INPUT') {
             e.preventDefault();
-            this.sort(col);
+            if (this.state.selectionTarget === "columns") {
+              this.handleColumnClick(col, e);
+            } else {
+              this.sort(col);
+            }
           }
         }
       };
@@ -1388,6 +1635,12 @@ class LuminaGrid {
     
     table.appendChild(thead);
 
+    // Insert heatmap scale row if enabled
+    const heatmapScaleRow = this.createHeatmapScaleRow();
+    if (heatmapScaleRow) {
+      table.appendChild(heatmapScaleRow);
+    }
+
     // TBODY
     const tbody = document.createElement("tbody");
     
@@ -1397,17 +1650,39 @@ class LuminaGrid {
     let topSpacerPx = 0;
     let bottomSpacerPx = 0;
     const totalRows = this.state.filteredData.length;
+    console.log("Total rows in filteredData:", totalRows, "paginationEnabled:", this.paginationEnabled);
     if (this.paginationEnabled && this.paginationScroller && this.virtualizationEnabled) {
       const rowH = this.getRowHeightPx();
       const containerHeight = this.refs.tableContainer ? this.refs.tableContainer.clientHeight || (this.paginationLimit * rowH) : this.paginationLimit * rowH;
       const scrollTop = this.refs.tableContainer ? this.refs.tableContainer.scrollTop : 0;
-      const first = Math.max(0, Math.floor(scrollTop / rowH) - this.virtualizationBuffer);
-      const visibleCount = Math.ceil(containerHeight / rowH) + (this.virtualizationBuffer * 2);
-      const last = Math.min(totalRows, first + visibleCount);
+      
+      console.log("VIRTUALIZATION DEBUG:", {
+        hasContainer: !!this.refs.tableContainer,
+        clientHeight: this.refs.tableContainer ? this.refs.tableContainer.clientHeight : 'N/A',
+        scrollTop: scrollTop,
+        paginationLimit: this.paginationLimit,
+        rowH: rowH,
+        containerHeight: containerHeight
+      });
+      
+      // Calculate visible range with buffer
+      const visibleCount = Math.ceil(containerHeight / rowH);
+      const bufferRows = this.virtualizationBuffer;
+      
+      // Calculate first visible row from scroll position
+      const scrolledRows = Math.floor(scrollTop / rowH);
+      const first = Math.max(0, scrolledRows - bufferRows);
+      
+      // Calculate how many rows to render (visible + buffers on both sides)
+      const renderCount = visibleCount + (bufferRows * 2);
+      const last = Math.min(totalRows, first + renderCount);
+      
       start = first;
       pageData = this.state.filteredData.slice(first, last);
       topSpacerPx = first * rowH;
       bottomSpacerPx = Math.max(0, (totalRows - last) * rowH);
+      
+      console.log("Virtualization:", { scrollTop, rowH, scrolledRows, first, last, totalRows, topSpacerPx, bottomSpacerPx, renderCount: last - first, visibleCount, bufferRows });
     } else if (this.paginationEnabled && this.paginationScroller) {
       pageData = this.state.filteredData;
       start = 0;
@@ -1418,6 +1693,7 @@ class LuminaGrid {
       pageData = this.state.filteredData.slice(start, end);
     }
 
+    console.log("pageData.length:", pageData.length, "editModeEnabled:", this.state.editModeEnabled);
     if (pageData.length === 0) {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
@@ -1433,6 +1709,9 @@ class LuminaGrid {
         const spacerTd = document.createElement("td");
         spacerTd.colSpan = this.state.visibleColumns.length;
         spacerTd.style.height = `${topSpacerPx}px`;
+        spacerTd.style.padding = "0";
+        spacerTd.style.border = "none";
+        spacerTd.style.lineHeight = "0";
         spacerTop.appendChild(spacerTd);
         tbody.appendChild(spacerTop);
       }
@@ -1443,7 +1722,7 @@ class LuminaGrid {
         const rowIndex = this.state.filteredRowIndices[filteredIndex];
         tr.setAttribute("data-row-index", rowIndex);
 
-        if (this.selectionEnabled) {
+        if (this.selectionEnabled && this.state.selectionTarget === "rows") {
           tr.style.cursor = "pointer";
           tr.onclick = (e) => this.handleRowClick(rowIndex, e);
         }
@@ -1457,8 +1736,15 @@ class LuminaGrid {
           // Skip hidden columns
           if (!this.state.visibleColumns.includes(colName)) return;
           
+          console.log("Processing cell:", { colName, rowIndex, editModeEnabled: this.state.editModeEnabled, htmlCols: this.htmlCols, isHtmlCol: this.htmlCols.includes(colName) });
+          
           const td = document.createElement("td");
           if (this.layoutTextAlign) td.style.textAlign = this.layoutTextAlign;
+
+          // Column selection highlighting
+          if (this.state.selectionTarget === "columns" && this.state.selectedColumns.has(colName)) {
+            td.classList.add("lumina-column-selected-cell");
+          }
           
           // Check if this column allows HTML (Sparklines)
           if (this.htmlCols.includes(colName)) {
@@ -1473,6 +1759,21 @@ class LuminaGrid {
           }
           this.applyHeatmap(td, colName, cellData);
           this.applyConditionalFormatting(td, tr, colName, cellData);
+          
+          // Add edit functionality when edit mode is enabled
+          if (this.state.editModeEnabled && !this.htmlCols.includes(colName)) {
+            console.log("Adding edit handler to cell:", colName, "edit mode:", this.state.editModeEnabled, "htmlCols:", this.htmlCols);
+            td.style.cursor = "pointer";
+            td.classList.add("lumina-editable-cell");
+            td.onclick = (e) => {
+              e.stopPropagation();
+              console.log("Cell clicked for editing:", colName, rowIndex);
+              // Get the actual text content from the cell to handle highlighted text
+              const actualValue = td.innerText || td.textContent || cellData;
+              console.log("Calling startCellEdit with value:", actualValue);
+              this.startCellEdit(td, rowIndex, colName, actualValue);
+            };
+          }
           
           // Apply sort highlight - use border if heatmap/conditional formatting present
           const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === colName);
@@ -1494,6 +1795,9 @@ class LuminaGrid {
         const spacerTd = document.createElement("td");
         spacerTd.colSpan = this.state.visibleColumns.length;
         spacerTd.style.height = `${bottomSpacerPx}px`;
+        spacerTd.style.padding = "0";
+        spacerTd.style.border = "none";
+        spacerTd.style.lineHeight = "0";
         spacerBottom.appendChild(spacerTd);
         tbody.appendChild(spacerBottom);
       }
@@ -1608,16 +1912,11 @@ class LuminaGrid {
             const hiddenCount = this.state.hiddenRows.size;
             const hiddenText = hiddenCount > 0 ? ` <span style="color: #ff6b6b;">(${hiddenCount} hidden)</span>` : "";
             const sortedText = this.state.sortColumns.length > 0 ? ` <span style="color: #666;">(sorted)</span>` : "";
-            summary.innerHTML = `Showing <b>${startRow}</b> to <b>${endRow}</b> of <b>${this.state.filteredData.length}</b> results${selectedText}${hiddenText}${sortedText}`;
+            const editText = this.state.editModeEnabled ? ` <span style="color: #28a745; font-weight: 600;">✎ Edit Mode ON</span>` : "";
+            summary.innerHTML = `Showing <b>${startRow}</b> to <b>${endRow}</b> of <b>${this.state.filteredData.length}</b> results${selectedText}${hiddenText}${sortedText}${editText}`;
             summary.setAttribute("role", "status");
             summary.setAttribute("aria-live", "polite");
             footer.appendChild(summary);
-        }
-        
-        // Add heatmap scale if enabled
-        const scaleBar = this.createHeatmapScale();
-        if (scaleBar) {
-          footer.appendChild(scaleBar);
         }
   
         wrapper.appendChild(footer);
@@ -1637,7 +1936,8 @@ class LuminaGrid {
         summary.className = "lumina-summary";
         const selectedCount = this.selectionEnabled ? this.state.selectedRows.size : 0;
         const selectedText = this.selectionEnabled && selectedCount > 0 ? ` <span style="color: #666;">(selected: ${selectedCount})</span>` : "";
-        summary.innerHTML = `Showing <b>${this.state.filteredData.length}</b> results (scroll to view all)${selectedText}`;
+        const editText = this.state.editModeEnabled ? ` <span style="color: #28a745; font-weight: 600;">✎ Edit Mode ON</span>` : "";
+        summary.innerHTML = `Showing <b>${this.state.filteredData.length}</b> results (scroll to view all)${selectedText}${editText}`;
         summary.setAttribute("role", "status");
         summary.setAttribute("aria-live", "polite");
         footer.appendChild(summary);
@@ -1789,6 +2089,7 @@ class LuminaGrid {
 
   handleRowClick(rowIndex, event) {
     if (!this.selectionEnabled) return;
+    if (this.state.selectionTarget !== "rows") return;
 
     const { selectedRows, lastSelectedRow } = this.state;
     const isSelected = selectedRows.has(rowIndex);
@@ -1815,6 +2116,42 @@ class LuminaGrid {
     this.state.lastSelectedRow = rowIndex;
     this.renderTable();
     this.sendSelectedRowsToShiny();
+  }
+
+  handleColumnClick(colName, event) {
+    if (!this.selectionEnabled) return;
+    if (this.state.selectionTarget !== "columns") return;
+
+    const selectedColumns = this.state.selectedColumns;
+    const isSelected = selectedColumns.has(colName);
+
+    if (this.selectionMode === "multiple" && event.shiftKey && this.state.lastSelectedColumn) {
+      // Select range between last and current column within visible columns
+      const visibleCols = this.state.visibleColumns;
+      const lastIdx = visibleCols.indexOf(this.state.lastSelectedColumn);
+      const currIdx = visibleCols.indexOf(colName);
+      if (lastIdx !== -1 && currIdx !== -1) {
+        const start = Math.min(lastIdx, currIdx);
+        const end = Math.max(lastIdx, currIdx);
+        for (let i = start; i <= end; i++) {
+          selectedColumns.add(visibleCols[i]);
+        }
+      }
+    } else if (this.selectionMode === "single") {
+      selectedColumns.clear();
+      if (!isSelected) {
+        selectedColumns.add(colName);
+      }
+    } else { // multiple
+      if (isSelected) {
+        selectedColumns.delete(colName);
+      } else {
+        selectedColumns.add(colName);
+      }
+    }
+
+    this.state.lastSelectedColumn = colName;
+    this.renderTable();
   }
 
   handleLimitChange(limit) {
@@ -1989,15 +2326,20 @@ class LuminaGrid {
 
   // Render only table and footer (preserve search input focus)
   renderTable() {
+    console.log("renderTable() called, editModeEnabled:", this.state.editModeEnabled);
+    
     if (!this.refs.tableContainer || !this.refs.footer) {
       // Fallback to full render if refs not initialized
+      console.log("Refs not initialized, calling full render");
       return this.render();
     }
 
+    console.log("Refs exist, proceeding with renderTable");
     // Recompute heatmap stats on current filtered data so colors persist across pagination/scroller
     this.initHeatmapStats();
 
     // Clear existing table before rendering new one
+    console.log("Clearing tableContainer");
     this.refs.tableContainer.innerHTML = "";
 
     // Build Table
@@ -2253,7 +2595,11 @@ class LuminaGrid {
         if (e.key === 'Enter' || e.key === ' ') {
           if (e.target.tagName !== 'INPUT') {
             e.preventDefault();
-            this.sort(col);
+            if (this.state.selectionTarget === "columns") {
+              this.handleColumnClick(col, e);
+            } else {
+              this.sort(col);
+            }
           }
         }
       };
@@ -2310,18 +2656,40 @@ class LuminaGrid {
     let topSpacerPx = 0;
     let bottomSpacerPx = 0;
     const totalRows = this.state.filteredData.length;
+    console.log("renderTable() TBODY section - Total rows in filteredData:", totalRows, "paginationEnabled:", this.paginationEnabled);
     if (this.paginationEnabled && this.paginationScroller && this.virtualizationEnabled) {
       const rowH = this.getRowHeightPx();
       const containerHeight = this.refs.tableContainer ? this.refs.tableContainer.clientHeight || (this.paginationLimit * rowH) : this.paginationLimit * rowH;
       const scrollTop = this.refs.tableContainer ? this.refs.tableContainer.scrollTop : 0;
-      const first = Math.max(0, Math.floor(scrollTop / rowH) - this.virtualizationBuffer);
-      const visibleCount = Math.ceil(containerHeight / rowH) + (this.virtualizationBuffer * 2);
-      const last = Math.min(totalRows, first + visibleCount);
+      
+      console.log("renderTable() VIRTUALIZATION DEBUG:", {
+        hasContainer: !!this.refs.tableContainer,
+        clientHeight: this.refs.tableContainer ? this.refs.tableContainer.clientHeight : 'N/A',
+        scrollTop: scrollTop,
+        paginationLimit: this.paginationLimit,
+        rowH: rowH,
+        containerHeight: containerHeight
+      });
+      
+      // Calculate visible range with buffer
+      const visibleCount = Math.ceil(containerHeight / rowH);
+      const bufferRows = this.virtualizationBuffer;
+      
+      // Calculate first visible row from scroll position
+      const scrolledRows = Math.floor(scrollTop / rowH);
+      const first = Math.max(0, scrolledRows - bufferRows);
+      
+      // Calculate how many rows to render (visible + buffers on both sides)
+      const renderCount = visibleCount + (bufferRows * 2);
+      const last = Math.min(totalRows, first + renderCount);
+      
       start = first;
       end = last;
       pageData = this.state.filteredData.slice(first, last);
       topSpacerPx = first * rowH;
       bottomSpacerPx = Math.max(0, (totalRows - last) * rowH);
+      
+      console.log("renderTable() Virtualization:", { scrollTop, rowH, scrolledRows, first, last, totalRows, topSpacerPx, bottomSpacerPx, renderCount: last - first, visibleCount, bufferRows });
     } else if (this.paginationEnabled && this.paginationScroller) {
       pageData = this.state.filteredData;
       start = 0;
@@ -2333,6 +2701,7 @@ class LuminaGrid {
       pageData = this.state.filteredData.slice(start, end);
     }
 
+    console.log("renderTable() pageData.length:", pageData.length, "editModeEnabled:", this.state.editModeEnabled);
     if (pageData.length === 0) {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
@@ -2348,9 +2717,13 @@ class LuminaGrid {
         const spacerTd = document.createElement("td");
         spacerTd.colSpan = this.state.visibleColumns.length;
         spacerTd.style.height = `${topSpacerPx}px`;
+        spacerTd.style.padding = "0";
+        spacerTd.style.border = "none";
+        spacerTd.style.lineHeight = "0";
         spacerTop.appendChild(spacerTd);
         tbody.appendChild(spacerTop);
       }
+      console.log("renderTable() About to process pageData with", pageData.length, "rows");
       pageData.forEach((rowData, pageIndex) => {
         const tr = document.createElement("tr");
         // Calculate index in filteredData using pageIndex and pagination offset
@@ -2358,7 +2731,7 @@ class LuminaGrid {
         const rowIndex = this.state.filteredRowIndices[filteredIndex];
         tr.setAttribute("data-row-index", rowIndex);
 
-        if (this.selectionEnabled) {
+        if (this.selectionEnabled && this.state.selectionTarget === "rows") {
           tr.style.cursor = "pointer";
           tr.onclick = (e) => this.handleRowClick(rowIndex, e);
         }
@@ -2372,8 +2745,14 @@ class LuminaGrid {
           // Skip hidden columns
           if (!this.state.visibleColumns.includes(colName)) return;
           
+          console.log("renderTable() Processing cell:", colName, "editModeEnabled:", this.state.editModeEnabled);
           const td = document.createElement("td");
           if (this.layoutTextAlign) td.style.textAlign = this.layoutTextAlign;
+
+          // Column selection highlighting
+          if (this.state.selectionTarget === "columns" && this.state.selectedColumns.has(colName)) {
+            td.classList.add("lumina-column-selected-cell");
+          }
           
           if (this.htmlCols.includes(colName)) {
             td.innerHTML = cellData;
@@ -2389,6 +2768,20 @@ class LuminaGrid {
           }
           this.applyHeatmap(td, colName, cellData);
           this.applyConditionalFormatting(td, tr, colName, cellData);
+          
+          // Add edit functionality when edit mode is enabled
+          if (this.state.editModeEnabled && !this.htmlCols.includes(colName)) {
+            console.log("renderTable() Adding edit handler to cell:", colName);
+            td.style.cursor = "pointer";
+            td.classList.add("lumina-editable-cell");
+            td.onclick = (e) => {
+              e.stopPropagation();
+              console.log("renderTable() Cell clicked for editing:", colName, rowIndex);
+              const actualValue = td.innerText || td.textContent || cellData;
+              console.log("renderTable() Calling startCellEdit with value:", actualValue);
+              this.startCellEdit(td, rowIndex, colName, actualValue);
+            };
+          }
           
           // Apply sorted column highlight if enabled - use border if heatmap/conditional formatting present
           const isSorted = this.sortHighlight && this.state.sortColumns.some(s => s.name === colName);
@@ -2410,6 +2803,9 @@ class LuminaGrid {
         const spacerTd = document.createElement("td");
         spacerTd.colSpan = this.state.visibleColumns.length;
         spacerTd.style.height = `${bottomSpacerPx}px`;
+        spacerTd.style.padding = "0";
+        spacerTd.style.border = "none";
+        spacerTd.style.lineHeight = "0";
         spacerBottom.appendChild(spacerTd);
         tbody.appendChild(spacerBottom);
       }
@@ -2581,9 +2977,28 @@ class LuminaGrid {
       const rowH = this.getRowHeightPx();
       const containerHeight = this.refs.tableContainer ? this.refs.tableContainer.clientHeight || (this.paginationLimit * rowH) : this.paginationLimit * rowH;
       const scrollTop = this.refs.tableContainer ? this.refs.tableContainer.scrollTop : 0;
-      const first = Math.max(0, Math.floor(scrollTop / rowH) - this.virtualizationBuffer);
-      const visibleCount = Math.ceil(containerHeight / rowH) + (this.virtualizationBuffer * 2);
-      const last = Math.min(totalRows, first + visibleCount);
+      
+      console.log("updateTableBody() VIRTUALIZATION DEBUG:", {
+        hasContainer: !!this.refs.tableContainer,
+        clientHeight: this.refs.tableContainer ? this.refs.tableContainer.clientHeight : 'N/A',
+        scrollTop: scrollTop,
+        paginationLimit: this.paginationLimit,
+        rowH: rowH,
+        containerHeight: containerHeight
+      });
+      
+      // Calculate visible range with buffer
+      const visibleCount = Math.ceil(containerHeight / rowH);
+      const bufferRows = this.virtualizationBuffer;
+      
+      // Calculate first visible row from scroll position
+      const scrolledRows = Math.floor(scrollTop / rowH);
+      const first = Math.max(0, scrolledRows - bufferRows);
+      
+      // Calculate how many rows to render (visible + buffers on both sides)
+      const renderCount = visibleCount + (bufferRows * 2);
+      const last = Math.min(totalRows, first + renderCount);
+      
       start = first;
       end = last;
       pageData = this.state.filteredData.slice(first, last);
@@ -2614,6 +3029,9 @@ class LuminaGrid {
         const spacerTd = document.createElement("td");
         spacerTd.colSpan = this.state.visibleColumns.length;
         spacerTd.style.height = `${topSpacerPx}px`;
+        spacerTd.style.padding = "0";
+        spacerTd.style.border = "none";
+        spacerTd.style.lineHeight = "0";
         spacerTop.appendChild(spacerTd);
         tbody.appendChild(spacerTop);
       }
@@ -2676,6 +3094,9 @@ class LuminaGrid {
         const spacerTd = document.createElement("td");
         spacerTd.colSpan = this.state.visibleColumns.length;
         spacerTd.style.height = `${bottomSpacerPx}px`;
+        spacerTd.style.padding = "0";
+        spacerTd.style.border = "none";
+        spacerTd.style.lineHeight = "0";
         spacerBottom.appendChild(spacerTd);
         tbody.appendChild(spacerBottom);
       }
@@ -2755,6 +3176,595 @@ class LuminaGrid {
       minimizeBtn.title = this.state.isMinimized ? "Expand Table" : "Minimize Table";
       minimizeBtn.setAttribute("aria-label", this.state.isMinimized ? "Expand table" : "Minimize table");
     }
+  }
+
+  // --- ADD/DELETE ROW/COLUMN OPERATIONS ---
+
+  addRow() {
+    // Add a new row at the end with empty values
+    const newRow = this.columns.map(() => "");
+    this.data.push(newRow);
+    this.rowIndices.push(Math.max(...this.rowIndices, 0) + 1);
+    this.state.filteredData.push(newRow);
+    this.state.filteredIndices.push(this.data.length - 1);
+    this.state.filteredRowIndices.push(this.rowIndices[this.rowIndices.length - 1]);
+    this.renderTable();
+  }
+
+  addRowAt(position) {
+    const newRow = this.columns.map(() => "");
+    const maxIndex = Math.max(...this.rowIndices, -1);
+    const newRowIndex = maxIndex + 1;
+    this.data.splice(position, 0, newRow);
+    this.rowIndices.splice(position, 0, newRowIndex);
+    this.processData();
+    this.renderTable();
+  }
+
+  deleteRow(rowIndex) {
+    const displayIndex = this.rowIndices.indexOf(rowIndex);
+    if (displayIndex !== -1) {
+      this.data.splice(displayIndex, 1);
+      this.rowIndices.splice(displayIndex, 1);
+      this.processData();
+      this.renderTable();
+    }
+  }
+
+  deleteSelectedRows(selectedRowIndices) {
+    // Sort indices in descending order to avoid index shifting issues
+    const indicesToDelete = selectedRowIndices.slice().sort((a, b) => {
+      const indexA = this.rowIndices.indexOf(a);
+      const indexB = this.rowIndices.indexOf(b);
+      return indexB - indexA;
+    });
+
+    // Delete rows in reverse order of display
+    indicesToDelete.forEach((rowIndex) => {
+      const displayIndex = this.rowIndices.indexOf(rowIndex);
+      if (displayIndex !== -1) {
+        this.data.splice(displayIndex, 1);
+        this.rowIndices.splice(displayIndex, 1);
+        // Also remove from selected rows
+        this.state.selectedRows.delete(rowIndex);
+      }
+    });
+
+    this.processData();
+    this.renderTable();
+  }
+
+  addColumn(colName, values = null) {
+    this.columns.push(colName);
+    this.initialVisibleColumns.push(colName);
+    this.state.visibleColumns.push(colName);
+    
+    // Add values to each row
+    const defaultValue = values && Array.isArray(values) ? values : this.data.map(() => "");
+    this.data.forEach((row, idx) => {
+      if (Array.isArray(values) && values[idx] !== undefined) {
+        row.push(values[idx]);
+      } else {
+        row.push("");
+      }
+    });
+    
+    this.renderTable();
+  }
+
+  addColumnAt(colName, position, values = null) {
+    this.columns.splice(position, 0, colName);
+    this.initialVisibleColumns.splice(position, 0, colName);
+    this.state.visibleColumns.splice(position, 0, colName);
+    
+    // Add values to each row at the specified position
+    this.data.forEach((row, idx) => {
+      let value = "";
+      if (Array.isArray(values) && values[idx] !== undefined) {
+        value = values[idx];
+      }
+      row.splice(position, 0, value);
+    });
+    
+    this.renderTable();
+  }
+
+  deleteColumn(colName) {
+    const colIndex = this.columns.indexOf(colName);
+    if (colIndex !== -1) {
+      // Remove from columns array
+      this.columns.splice(colIndex, 1);
+      this.initialVisibleColumns.splice(this.initialVisibleColumns.indexOf(colName), 1);
+      
+      // Remove from visible columns
+      const visIdx = this.state.visibleColumns.indexOf(colName);
+      if (visIdx !== -1) {
+        this.state.visibleColumns.splice(visIdx, 1);
+      }
+      
+      // Remove from data rows
+      this.data.forEach(row => {
+        row.splice(colIndex, 1);
+      });
+      
+      // Remove any filters for this column
+      if (this.state.columnFilters[colName]) {
+        delete this.state.columnFilters[colName];
+      }
+      
+      // Remove from sort stack
+      const sortIdx = this.state.sortColumns.findIndex(s => s.name === colName);
+      if (sortIdx !== -1) {
+        this.state.sortColumns.splice(sortIdx, 1);
+      }
+      
+      this.processData();
+      this.renderTable();
+    }
+  }
+
+  // Modal delete confirmation
+  showDeleteRowModal(rowIndex) {
+    const modal = document.createElement("div");
+    modal.className = "lumina-delete-modal-overlay";
+    
+    const modalContent = document.createElement("div");
+    modalContent.className = "lumina-delete-modal";
+    
+    const title = document.createElement("div");
+    title.className = "lumina-delete-modal-title";
+    title.textContent = "Delete Row";
+    modalContent.appendChild(title);
+    
+    const message = document.createElement("div");
+    message.className = "lumina-delete-modal-message";
+    message.textContent = `Are you sure you want to delete this row?`;
+    modalContent.appendChild(message);
+    
+    const buttons = document.createElement("div");
+    buttons.className = "lumina-delete-modal-buttons";
+    
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "lumina-delete-modal-btn lumina-delete-modal-cancel";
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.onclick = () => {
+      modal.remove();
+    };
+    buttons.appendChild(cancelBtn);
+    
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "lumina-delete-modal-btn lumina-delete-modal-confirm";
+    deleteBtn.textContent = "Delete";
+    deleteBtn.onclick = () => {
+      this.deleteRow(rowIndex);
+      modal.remove();
+    };
+    buttons.appendChild(deleteBtn);
+    
+    modalContent.appendChild(buttons);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Focus delete button and allow ESC to cancel
+    deleteBtn.focus();
+    modal.onkeydown = (e) => {
+      if (e.key === 'Escape') {
+        modal.remove();
+      }
+    };
+  }
+
+  showDeleteSelectedRowsModal(selectedRowIndices) {
+    const modal = document.createElement("div");
+    modal.className = "lumina-delete-modal-overlay";
+    
+    const modalContent = document.createElement("div");
+    modalContent.className = "lumina-delete-modal";
+    
+    const title = document.createElement("div");
+    title.className = "lumina-delete-modal-title";
+    title.textContent = selectedRowIndices.length === 1 ? "Delete Row" : "Delete Rows";
+    modalContent.appendChild(title);
+    
+    const message = document.createElement("div");
+    message.className = "lumina-delete-modal-message";
+    message.textContent = `Are you sure you want to delete ${selectedRowIndices.length} ${selectedRowIndices.length === 1 ? "row" : "rows"}?`;
+    modalContent.appendChild(message);
+    
+    const rowList = document.createElement("div");
+    rowList.className = "lumina-delete-modal-list";
+    rowList.style.maxHeight = "200px";
+    rowList.style.overflowY = "auto";
+    rowList.style.padding = "8px";
+    rowList.style.backgroundColor = "#f5f5f5";
+    rowList.style.borderRadius = "4px";
+    rowList.style.marginBottom = "12px";
+    rowList.style.fontSize = "13px";
+    rowList.style.color = "#666";
+    
+    // Show a preview of rows being deleted
+    selectedRowIndices.slice(0, 10).forEach((rowIndex, idx) => {
+      const displayIndex = this.rowIndices.indexOf(rowIndex);
+      const rowText = document.createElement("div");
+      rowText.style.padding = "4px 0";
+      const firstCol = this.data[displayIndex] ? this.data[displayIndex][0] : "N/A";
+      rowText.textContent = `Row ${idx + 1}: ${firstCol}`;
+      rowList.appendChild(rowText);
+    });
+    
+    if (selectedRowIndices.length > 10) {
+      const moreText = document.createElement("div");
+      moreText.style.padding = "4px 0";
+      moreText.style.fontStyle = "italic";
+      moreText.textContent = `... and ${selectedRowIndices.length - 10} more`;
+      rowList.appendChild(moreText);
+    }
+    
+    modalContent.appendChild(rowList);
+    
+    const buttons = document.createElement("div");
+    buttons.className = "lumina-delete-modal-buttons";
+    
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "lumina-delete-modal-btn lumina-delete-modal-cancel";
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.onclick = () => {
+      modal.remove();
+    };
+    buttons.appendChild(cancelBtn);
+    
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "lumina-delete-modal-btn lumina-delete-modal-confirm";
+    deleteBtn.textContent = `Delete ${selectedRowIndices.length} ${selectedRowIndices.length === 1 ? "Row" : "Rows"}`;
+    deleteBtn.onclick = () => {
+      this.deleteSelectedRows(selectedRowIndices);
+      modal.remove();
+    };
+    buttons.appendChild(deleteBtn);
+    
+    modalContent.appendChild(buttons);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Focus delete button and allow ESC to cancel
+    deleteBtn.focus();
+    modal.onkeydown = (e) => {
+      if (e.key === 'Escape') {
+        modal.remove();
+      }
+    };
+  }
+
+  showDeleteColumnModal(colName) {
+    const modal = document.createElement("div");
+    modal.className = "lumina-delete-modal-overlay";
+    
+    const modalContent = document.createElement("div");
+    modalContent.className = "lumina-delete-modal";
+    
+    const title = document.createElement("div");
+    title.className = "lumina-delete-modal-title";
+    title.textContent = "Delete Column";
+    modalContent.appendChild(title);
+    
+    const message = document.createElement("div");
+    message.className = "lumina-delete-modal-message";
+    message.textContent = `Are you sure you want to delete the "${colName}" column?`;
+    modalContent.appendChild(message);
+    
+    const buttons = document.createElement("div");
+    buttons.className = "lumina-delete-modal-buttons";
+    
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "lumina-delete-modal-btn lumina-delete-modal-cancel";
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.onclick = () => {
+      modal.remove();
+    };
+    buttons.appendChild(cancelBtn);
+    
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "lumina-delete-modal-btn lumina-delete-modal-confirm";
+    deleteBtn.textContent = "Delete";
+    deleteBtn.onclick = () => {
+      this.deleteColumn(colName);
+      modal.remove();
+    };
+    buttons.appendChild(deleteBtn);
+    
+    modalContent.appendChild(buttons);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Focus delete button and allow ESC to cancel
+    deleteBtn.focus();
+    modal.onkeydown = (e) => {
+      if (e.key === 'Escape') {
+        modal.remove();
+      }
+    };
+  }
+
+  // Update Save button visibility based on pending edits
+  updateSaveButtonVisibility() {
+    if (this.refs.saveBtn) {
+      this.refs.saveBtn.style.display = this.state.hasPendingEdits ? "inline-block" : "none";
+    }
+  }
+
+  // Mark that there are pending edits
+  markPendingEdit(rowIndex, colName, value) {
+    const key = `${rowIndex}_${colName}`;
+    this.state.pendingEdits.set(key, value);
+    this.state.hasPendingEdits = true;
+    this.updateSaveButtonVisibility();
+  }
+
+  // Commit all pending edits to the data
+  commitPendingEdits() {
+    if (this.state.pendingEdits.size === 0) return;
+
+    this.state.pendingEdits.forEach((value, key) => {
+      const [rowIndex, colName] = key.split('_');
+      const displayIndex = this.rowIndices.indexOf(parseInt(rowIndex));
+      const colIndex = this.columns.indexOf(colName);
+      
+      if (displayIndex !== -1 && colIndex !== -1) {
+        this.data[displayIndex][colIndex] = value;
+      }
+    });
+
+    this.state.pendingEdits.clear();
+    this.state.hasPendingEdits = false;
+    this.updateSaveButtonVisibility();
+    this.renderTable();
+  }
+
+  // Clear pending edits without saving
+  clearPendingEdits() {
+    this.state.pendingEdits.clear();
+    this.state.hasPendingEdits = false;
+    this.updateSaveButtonVisibility();
+  }
+
+  // Start editing a cell
+  startCellEdit(cellElement, rowIndex, colName, currentValue) {
+    console.log("startCellEdit called:", { rowIndex, colName, currentValue, editModeEnabled: this.state.editModeEnabled });
+    
+    // Prevent multiple edits on same cell
+    if (cellElement.querySelector('.lumina-cell-edit-input, .lumina-cell-edit-select')) {
+      console.log("Input already exists in cell, preventing double edit");
+      return;
+    }
+    
+    console.log("Creating input element for editing");
+    
+    // Get edit configuration for this column
+    const colConfig = this.editColumns[colName] || {};
+    const { type = "text", choices = null, min, max, required = false, maxLength, pattern, allowNewChoices = false } = colConfig;
+    
+    let inputElement;
+    let errorMsg = null;
+    
+    // Create dropdown if choices are provided
+    if (choices && Array.isArray(choices) && choices.length > 0) {
+      const select = document.createElement("select");
+      select.className = "lumina-cell-edit-select";
+      select.style.width = "100%";
+      select.style.padding = "4px";
+      select.style.border = "2px solid #0969da";
+      select.style.borderRadius = "3px";
+      select.style.fontSize = "inherit";
+      select.style.fontFamily = "inherit";
+      select.style.boxSizing = "border-box";
+      
+      // Add empty option if not required
+      if (!required) {
+        const emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.textContent = "-- Select --";
+        select.appendChild(emptyOption);
+      }
+      
+      // Add choices
+      choices.forEach(choice => {
+        const option = document.createElement("option");
+        option.value = choice;
+        option.textContent = choice;
+        if (choice === currentValue) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+      });
+      
+      // If current value not in choices and allowNewChoices, add it
+      if (currentValue && !choices.includes(currentValue) && allowNewChoices) {
+        const option = document.createElement("option");
+        option.value = currentValue;
+        option.textContent = currentValue + " (custom)";
+        option.selected = true;
+        select.appendChild(option);
+      }
+      
+      inputElement = select;
+    } else {
+      // Create text/number/date input
+      const input = document.createElement("input");
+      
+      // Set input type based on configuration
+      if (type === "numeric" || type === "integer") {
+        input.type = "number";
+        if (type === "integer") {
+          input.step = "1";
+        } else {
+          input.step = "any";
+        }
+        if (min !== undefined) input.min = min;
+        if (max !== undefined) input.max = max;
+      } else if (type === "date") {
+        input.type = "date";
+      } else if (type === "email") {
+        input.type = "email";
+      } else if (type === "url") {
+        input.type = "url";
+      } else {
+        input.type = "text";
+      }
+      
+      input.value = currentValue || "";
+      input.className = "lumina-cell-edit-input";
+      input.style.width = "100%";
+      input.style.padding = "4px";
+      input.style.border = "2px solid #0969da";
+      input.style.borderRadius = "3px";
+      input.style.fontSize = "inherit";
+      input.style.fontFamily = "inherit";
+      input.style.boxSizing = "border-box";
+      
+      if (required) input.required = true;
+      if (maxLength) input.maxLength = maxLength;
+      if (pattern) input.pattern = pattern;
+      
+      inputElement = input;
+    }
+    
+    // Store original value and styling
+    const originalContent = cellElement.innerHTML;
+    const originalValue = currentValue;
+    
+    // Validation function
+    const validateInput = (value) => {
+      // Required check
+      if (required && (!value || value.toString().trim() === "")) {
+        return "This field is required";
+      }
+      
+      // Numeric validation
+      if ((type === "numeric" || type === "integer") && value !== "") {
+        const numValue = parseFloat(value);
+        if (isNaN(numValue)) {
+          return "Must be a valid number";
+        }
+        if (type === "integer" && !Number.isInteger(numValue)) {
+          return "Must be an integer";
+        }
+        if (min !== undefined && numValue < min) {
+          return `Must be at least ${min}`;
+        }
+        if (max !== undefined && numValue > max) {
+          return `Must be at most ${max}`;
+        }
+      }
+      
+      // Pattern validation
+      if (pattern && value !== "") {
+        const regex = new RegExp(pattern);
+        if (!regex.test(value)) {
+          return "Invalid format";
+        }
+      }
+      
+      // Email validation (basic)
+      if (type === "email" && value !== "") {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          return "Invalid email format";
+        }
+      }
+      
+      return null; // Valid
+    };
+    
+    // Create error message container
+    const errorContainer = document.createElement("div");
+    errorContainer.className = "lumina-cell-edit-error";
+    errorContainer.style.color = "#d73a49";
+    errorContainer.style.fontSize = "11px";
+    errorContainer.style.marginTop = "2px";
+    errorContainer.style.display = "none";
+    
+    // Replace cell content with input
+    cellElement.innerHTML = "";
+    cellElement.appendChild(inputElement);
+    cellElement.appendChild(errorContainer);
+    
+    console.log("Input element appended to cell");
+    inputElement.focus();
+    if (inputElement.select) inputElement.select();
+    console.log("Input focused and selected");
+    
+    // Handle save on Enter or blur
+    const saveEdit = () => {
+      const newValue = inputElement.value;
+      
+      // Validate before saving
+      const validationError = validateInput(newValue);
+      if (validationError) {
+        errorContainer.textContent = validationError;
+        errorContainer.style.display = "block";
+        inputElement.style.border = "2px solid #d73a49";
+        inputElement.focus();
+        return false; // Prevent save
+      }
+      
+      if (newValue !== originalValue) {
+        // Mark as pending edit
+        this.markPendingEdit(rowIndex, colName, newValue);
+        // Update the display
+        cellElement.innerText = newValue;
+      } else {
+        cellElement.innerText = originalValue;
+      }
+      // Re-enable edit mode for the cell
+      if (this.state.editModeEnabled) {
+        cellElement.style.cursor = "pointer";
+        cellElement.classList.add("lumina-editable-cell");
+        cellElement.onclick = (e) => {
+          e.stopPropagation();
+          const actualValue = cellElement.innerText || cellElement.textContent || newValue;
+          this.startCellEdit(cellElement, rowIndex, colName, actualValue);
+        };
+      }
+      return true;
+    };
+    
+    const cancelEdit = () => {
+      cellElement.innerHTML = originalContent;
+      if (this.state.editModeEnabled) {
+        cellElement.style.cursor = "pointer";
+        cellElement.classList.add("lumina-editable-cell");
+        cellElement.onclick = (e) => {
+          e.stopPropagation();
+          const actualValue = cellElement.innerText || cellElement.textContent || originalValue;
+          this.startCellEdit(cellElement, rowIndex, colName, actualValue);
+        };
+      }
+    };
+    
+    inputElement.onkeydown = (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveEdit();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        cancelEdit();
+      }
+    };
+    
+    inputElement.onblur = () => {
+      // Small delay to allow clicking on error message
+      setTimeout(() => {
+        if (document.activeElement !== inputElement) {
+          saveEdit();
+        }
+      }, 100);
+    };
+    
+    // Clear error on input change
+    inputElement.oninput = () => {
+      errorContainer.style.display = "none";
+      inputElement.style.border = "2px solid #0969da";
+    };
   }
 }
 

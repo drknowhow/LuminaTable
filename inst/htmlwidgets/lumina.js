@@ -128,10 +128,16 @@ HTMLWidgets.widget({
             layout: x.config.layout || {},
             performance: performanceConf,
             heatmap: heatmapConf,
-                        condFormatRules: condformatConf.rules || [],
-                        condFormatEdit: condformatConf.edit === true,
-            elementId: el.id
+            condFormatRules: condformatConf.rules || [],
+            condFormatEdit: condformatConf.edit === true,
+            elementId: el.id,
+            edit: x.config.edit || null
         });
+        
+        // Store instance in global instances object for Shiny access
+        if (el.id && LuminaGrid.instances) {
+          LuminaGrid.instances[el.id] = el.lumina;
+        }
       },
 
       resize: function(width, height) {

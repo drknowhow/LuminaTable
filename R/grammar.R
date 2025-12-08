@@ -237,8 +237,9 @@ opt_condformat <- function(w, ..., rules = NULL, edit = FALSE) {
 #' @param palette Character vector of 2-5 hex colors used for a linear gradient (low → high).
 #' @param showValues Logical. Show numeric values in cells (TRUE) or hide content and show only color (FALSE). Default: TRUE.
 #' @param showScale Logical. Add a color scale bar in the table footer showing the gradient mapping. Default: FALSE.
+#' @param individualized Logical. If TRUE (default), each column has its own min/max/median scale. If FALSE and multiple columns are specified, all columns share a unified min/max/median computed across all heatmap columns. Default: TRUE.
 #' @export
-opt_heatmap <- function(w, columns, palette = c("#f7fbff", "#6baed6", "#08306b"), showValues = TRUE, showScale = FALSE) {
+opt_heatmap <- function(w, columns, palette = c("#f7fbff", "#6baed6", "#08306b"), showValues = TRUE, showScale = FALSE, individualized = TRUE) {
   if (is.null(w$x$config)) w$x$config <- list()
 
   if (missing(columns) || length(columns) == 0) {
@@ -249,10 +250,271 @@ opt_heatmap <- function(w, columns, palette = c("#f7fbff", "#6baed6", "#08306b")
     columns = as.character(columns),
     palette = as.character(palette),
     showValues = isTRUE(showValues),
-    showScale = isTRUE(showScale)
+    showScale = isTRUE(showScale),
+    individualized = isTRUE(individualized)
   )
 
   return(w)
+}
+
+#' Enable Table Editing Mode
+#'
+#' Activate edit mode to allow users to modify table content. This is the main
+#' function to enable editing - use \code{edit_col()} to configure specific columns.
+#'
+#' @param w A lumina widget
+#' @param columns List of column configurations created with \code{edit_col()}, or a
+#'   character vector of column names to make editable (uses auto-detection for types).
+#'   Use TRUE to make all columns editable with auto-detection, FALSE to disable all editing.
+#' @param rows Logical or integer vector. TRUE for all rows editable, FALSE for none,
+#'   or integer vector of specific row indices. Default: TRUE.
+#' @param add Logical or character vector. TRUE allows adding rows and columns,
+#'   FALSE disables both. Use c("rows") or c("columns") or c("rows", "columns") for fine control.
+#'   Default: "rows" (only row addition allowed).
+#' @param delete Same format as \code{add}. Default: "rows".
+#' @param headerEdit Logical. Allow editing column headers. Default: FALSE.
+#' @param trackChanges Logical. Track edit history for Shiny. Default: TRUE.
+#' @param onEdit Character. JavaScript callback function name. Default: NULL.
+#'
+#' @return A lumina widget with edit configuration
+#'
+#' @examples
+#' \dontrun{
+#' # Simple: make all columns editable with auto-detection
+#' lumina(mtcars) %>% opt_edit()
+#'
+#' # Specify which columns are editable
+#' lumina(df) %>% opt_edit(columns = c("Name", "Age", "Status"))
+#'
+#' # Configure specific columns with edit_col()
+#' lumina(df) %>% opt_edit(columns = list(
+#'   edit_col("Name"),
+#'   edit_col("Age", type = "integer", min = 0, max = 120),
+#'   edit_col("Status", choices = c("Active", "Inactive", "Pending")),
+#'   edit_col("StartDate", type = "date"),
+#'   edit_col("Email", type = "email")
+#' ))
+#'
+#' # Allow adding/deleting rows and columns
+#' lumina(df) %>% opt_edit(add = TRUE, delete = TRUE)
+#'
+#' # Read-only except specific columns
+#' lumina(df) %>% opt_edit(columns = list(
+#'   edit_col("Notes", type = "text")
+#' ))
+#' }
+#'
+#' @seealso \code{\link{edit_col}} for column configuration options
+#' @export
+opt_edit <- function(w, columns = TRUE, rows = TRUE, add = "rows", delete = "rows",
+                     headerEdit = FALSE, trackChanges = TRUE, onEdit = NULL) {
+  if (is.null(w$x$config)) w$x$config <- list()
+
+  # Parse add/delete permissions
+  parse_permissions <- function(x) {
+    if (isTRUE(x)) return(list(rows = TRUE, columns = TRUE))
+    if (isFALSE(x)) return(list(rows = FALSE, columns = FALSE))
+    if (is.character(x)) {
+      return(list(
+        rows = "rows" %in% tolower(x),
+        columns = "columns" %in% tolower(x)
+      ))
+    }
+    list(rows = FALSE, columns = FALSE)
+  }
+
+  add_perms <- parse_permissions(add)
+  delete_perms <- parse_permissions(delete)
+
+  # Process columns configuration
+  col_config <- process_edit_columns(columns, w$x$data, w$x$columns)
+
+  w$x$config$edit <- list(
+    enabled = !isFALSE(columns),
+    columns = col_config$columns,
+    editableRows = rows,
+    allowRowAdd = add_perms$rows,
+    allowRowDelete = delete_perms$rows,
+    allowColumnAdd = add_perms$columns,
+    allowColumnDelete = delete_perms$columns,
+    trackChanges = isTRUE(trackChanges),
+    colNameEdit = isTRUE(headerEdit),
+    onEdit = onEdit
+  )
+
+  return(w)
+}
+
+#' Configure an Editable Column
+#'
+#' Define how a specific column should be edited. Use within \code{opt_edit(columns = list(...))}.
+#'
+#' @param col Column name (character string)
+#' @param type Editor type: "text", "numeric", "integer", "date", "logical", "email", "url",
+#'   or "dropdown" (auto-detected if \code{choices} provided). Default: auto-detect from data.
+#' @param choices Character vector of allowed values. Creates a dropdown selector.
+#' @param allowNewChoices Logical. If TRUE, users can add new values to dropdown. Default: FALSE.
+#' @param min Minimum value (for numeric/integer types)
+#' @param max Maximum value (for numeric/integer types)
+#' @param required Logical. If TRUE, empty values are not allowed. Default: FALSE.
+#' @param maxLength Maximum string length (for text type)
+#' @param pattern Regex pattern for validation (for text type)
+#'
+#' @return A list with column edit configuration
+#'
+#' @examples
+#' \dontrun{
+#' edit_col("Name")
+#' edit_col("Age", type = "integer", min = 0, max = 150)
+#' edit_col("Status", choices = c("Active", "Inactive"))
+#' edit_col("Email", type = "email", required = TRUE)
+#' edit_col("Score", type = "numeric", min = 0, max = 100)
+#' }
+#'
+#' @export
+edit_col <- function(col, type = NULL, choices = NULL, allowNewChoices = FALSE,
+                     min = NULL, max = NULL, required = FALSE,
+                     maxLength = NULL, pattern = NULL) {
+  config <- list(
+    col = col,
+    type = type,
+    choices = choices,
+    allowNewChoices = isTRUE(allowNewChoices),
+    min = min,
+    max = max,
+    required = isTRUE(required),
+    maxLength = maxLength,
+    pattern = pattern
+  )
+
+  # Remove NULL values for cleaner JSON
+
+  config <- config[!sapply(config, is.null)]
+
+  # Auto-set type to dropdown if choices provided
+
+  if (!is.null(choices) && is.null(type)) {
+    config$type <- "dropdown"
+  }
+
+  class(config) <- c("lumina_edit_col", "list")
+  config
+}
+
+# Internal function to process column configurations
+process_edit_columns <- function(columns, data, col_names) {
+  result <- list(columns = list())
+
+  # FALSE = no editing
+
+  if (isFALSE(columns)) {
+    return(list(columns = list(), allEditable = FALSE))
+  }
+
+  # TRUE = all columns editable with auto-detection
+  if (isTRUE(columns)) {
+    for (col in col_names) {
+      result$columns[[col]] <- auto_detect_col_config(col, data, col_names)
+    }
+    return(result)
+  }
+
+  # Character vector = specific columns editable with auto-detection
+  if (is.character(columns)) {
+    for (col in columns) {
+      if (col %in% col_names) {
+        result$columns[[col]] <- auto_detect_col_config(col, data, col_names)
+      }
+    }
+    return(result)
+  }
+
+  # List of edit_col() configurations
+
+if (is.list(columns)) {
+    for (cfg in columns) {
+      if (inherits(cfg, "lumina_edit_col")) {
+        col <- cfg$col
+        if (col %in% col_names) {
+          # Start with auto-detected config, then override with user settings
+          auto_config <- auto_detect_col_config(col, data, col_names)
+          # Merge user config over auto config
+          for (key in names(cfg)) {
+            if (key != "col") {
+              auto_config[[key]] <- cfg[[key]]
+            }
+          }
+          result$columns[[col]] <- auto_config
+        }
+      }
+    }
+    return(result)
+  }
+
+  result
+}
+
+# Auto-detect column type and configuration from data
+auto_detect_col_config <- function(col, data, col_names) {
+  config <- list(editable = TRUE)
+
+  # Get column index and sample values
+  col_idx <- which(col_names == col)
+  if (length(col_idx) == 0 || is.null(data) || length(data) == 0) {
+    config$type <- "text"
+    return(config)
+  }
+
+  # Extract column values from list-of-lists data structure
+  values <- sapply(data, function(row) {
+    if (length(row) >= col_idx) row[[col_idx]] else NA
+  })
+  values <- values[!is.na(values) & values != ""]
+
+  if (length(values) == 0) {
+    config$type <- "text"
+    return(config)
+  }
+
+  # Check for logical/boolean
+  logical_vals <- c("true", "false", "TRUE", "FALSE", "1", "0", "yes", "no", "t", "f")
+  if (all(tolower(as.character(values)) %in% logical_vals)) {
+    config$type <- "logical"
+    return(config)
+  }
+
+  # Check for numeric
+  numeric_vals <- suppressWarnings(as.numeric(values))
+  if (!any(is.na(numeric_vals))) {
+    # Check if all integers
+    if (all(numeric_vals == floor(numeric_vals))) {
+      config$type <- "integer"
+    } else {
+      config$type <- "numeric"
+    }
+    return(config)
+  }
+
+  # Check for date patterns
+  date_patterns <- c(
+    "^\\d{4}-\\d{2}-\\d{2}$",      # YYYY-MM-DD
+    "^\\d{2}/\\d{2}/\\d{4}$",      # MM/DD/YYYY
+    "^\\d{2}-\\d{2}-\\d{4}$"       # DD-MM-YYYY
+  )
+  if (any(sapply(date_patterns, function(p) all(grepl(p, values))))) {
+    config$type <- "date"
+    return(config)
+  }
+
+  # Check for email pattern
+  if (all(grepl("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", values))) {
+    config$type <- "email"
+    return(config)
+  }
+
+  # Default to text
+  config$type <- "text"
+  config
 }
 
 #' Configure Table Layout and Appearance

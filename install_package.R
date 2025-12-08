@@ -18,7 +18,7 @@ cat("  ✓ Build artifacts cleaned\n")
 
 # Set working directory to package root
 setwd(pkg_dir)
-
+ 
 cat("\nStep 1: Generating documentation and NAMESPACE...\n")
 devtools::document()
 

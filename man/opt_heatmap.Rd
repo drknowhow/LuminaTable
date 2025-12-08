@@ -9,7 +9,8 @@ opt_heatmap(
   columns,
   palette = c("#f7fbff", "#6baed6", "#08306b"),
   showValues = TRUE,
-  showScale = FALSE
+  showScale = FALSE,
+  individualized = TRUE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ opt_heatmap(
 \item{showValues}{Logical. Show numeric values in cells (TRUE) or hide content and show only color (FALSE). Default: TRUE.}
 
 \item{showScale}{Logical. Add a color scale bar in the table footer showing the gradient mapping. Default: FALSE.}
+
+\item{individualized}{Logical. If TRUE (default), each column has its own min/max/median scale. If FALSE and multiple columns are specified, all columns share a unified min/max/median computed across all heatmap columns. Default: TRUE.}
 }
 \description{
 Colors specified numeric columns using a low→high gradient. The heatmap is applied directly to the table cells.
